@@ -1,3 +1,4 @@
+const { connectLambda } = require('@netlify/blobs');
 const { parseRssFeed } = require('../../lib/discovery/parseRssFeed');
 const { extractCandidate } = require('../../lib/discovery/extractCandidate');
 const { scoreRelease } = require('../../lib/scoring/scoreRelease');
@@ -86,7 +87,9 @@ function sortByDate(releases) {
   });
 }
 
-exports.handler = async function () {
+exports.handler = async function (event) {
+  connectLambda(event);
+
   let items;
   try {
     items = await parseRssFeed(FEED_URL);
