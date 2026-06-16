@@ -3,7 +3,7 @@ const { parseRssFeed } = require('../../lib/discovery/parseRssFeed');
 const { extractCandidate } = require('../../lib/discovery/extractCandidate');
 const { scoreRelease } = require('../../lib/scoring/scoreRelease');
 const { fetchArt } = require('../../lib/art/fetchArt');
-const { upsertRelease, getAllReleases } = require('../../lib/storage/releaseStore');
+const { upsertRelease, getRelease, getAllReleases } = require('../../lib/storage/releaseStore');
 
 const FEED_URL = 'https://www.brooklynvegan.com/feed/';
 const ITEM_LIMIT = 6;
@@ -38,6 +38,17 @@ async function processItem(item) {
 
   if (!extracted.isAlbumAnnouncement) {
     return { skipped: item.title };
+  }
+
+  let existing = null;
+  try {
+    existing = await getRelease(extracted.artist, extracted.albumTitle);
+  } catch (err) {
+    existing = null;
+  }
+
+  if (existing) {
+    return { alreadyKnown: `${extracted.artist} - ${extracted.albumTitle}` };
   }
 
   const candidate = {
@@ -114,6 +125,7 @@ exports.handler = async function (event) {
 
   const results = await Promise.all(items.map(processItem));
   const cards = results.filter((r) => r.card).map((r) => r.card);
+  const alreadyKnown = results.filter((r) => r.alreadyKnown).map((r) => r.alreadyKnown);
   const skipped = results.filter((r) => r.skipped).map((r) => r.skipped);
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Discovery test</title>
@@ -143,8 +155,10 @@ ${
     ? alreadySaved.map(renderCard).join('\n')
     : '<p>Nothing saved yet, this would be the first run to save anything.</p>'
 }
-<h2>Found and saved just now (${cards.length})</h2>
-${cards.length ? cards.map(renderCard).join('\n') : '<p>None this run, try again later.</p>'}
+<h2>Found and scored just now, genuinely new (${cards.length})</h2>
+${cards.length ? cards.map(renderCard).join('\n') : '<p>None this run.</p>'}
+<h2>Already known, left alone (${alreadyKnown.length})</h2>
+${alreadyKnown.length ? alreadyKnown.map((t) => `<div class="skip">already scored earlier: ${t}</div>`).join('\n') : '<p>Nothing in this batch was already known.</p>'}
 <h2>Skipped this run (${skipped.length})</h2>
 ${skipped.length ? skipped.map(renderSkipped).join('\n') : '<p>Nothing skipped.</p>'}
 </body></html>`;
