@@ -116,4 +116,5 @@ ${cards.length ? cards.map(renderCard).join('\n') : '<p>None this run, try again
 ${skipped.length ? skipped.map(renderSkipped).join('\n') : '<p>Nothing skipped.</p>'}
 </body></html>`;
 
-  return { statusCode: 200,
+  return { statusCode: 200, headers: { 'Content-Type': 'text/html' }, body: html };
+};
