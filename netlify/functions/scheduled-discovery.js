@@ -1,6 +1,7 @@
 const { connectLambda } = require('@netlify/blobs');
 const { fetchAllFeedItems } = require('../../lib/discovery/fetchAllFeedItems');
-const { runDiscoveryPass } = require('../../lib/discovery/runDiscoveryPass');
+const { fetchUpcomingAlbums } = require('../../lib/discovery/wikipediaAlbumList');
+const { runDiscoveryPass, runStructuredPass } = require('../../lib/discovery/runDiscoveryPass');
 
 exports.handler = async function (event) {
   connectLambda(event);
@@ -15,11 +16,24 @@ exports.handler = async function (event) {
   const { cards, alreadyKnown, skipped } = await runDiscoveryPass(allItems);
 
   console.log(
-    `Scheduled discovery run complete. ${cards.length} new, ${alreadyKnown.length} already known, ${skipped.length} skipped.`
+    `RSS pass complete. ${cards.length} new, ${alreadyKnown.length} already known, ${skipped.length} skipped.`
   );
   cards.forEach((c) => {
-    console.log(`  NEW: ${c.artist} - ${c.albumTitle} (${c.score ?? 'no score'}%)`);
+    console.log(`  NEW (RSS): ${c.artist} - ${c.albumTitle} (${c.score ?? 'no score'}%)`);
   });
+
+  try {
+    const wikiEntries = await fetchUpcomingAlbums();
+    const wikiResult = await runStructuredPass(wikiEntries);
+    console.log(
+      `Wikipedia pass complete. ${wikiResult.cards.length} new, ${wikiResult.alreadyKnown.length} already known, ${wikiResult.stillQueued} still queued out of ${wikiResult.totalConsidered} total entries.`
+    );
+    wikiResult.cards.forEach((c) => {
+      console.log(`  NEW (Wikipedia): ${c.artist} - ${c.albumTitle} (${c.score ?? 'no score'}%)`);
+    });
+  } catch (err) {
+    console.error('Wikipedia pass failed:', err.message);
+  }
 
   return { statusCode: 200, body: 'ok' };
 };
