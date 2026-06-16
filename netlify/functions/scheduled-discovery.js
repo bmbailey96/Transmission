@@ -26,7 +26,7 @@ exports.handler = async function (event) {
     const wikiEntries = await fetchUpcomingAlbums();
     const wikiResult = await runStructuredPass(wikiEntries);
     console.log(
-      `Wikipedia pass complete. ${wikiResult.cards.length} new, ${wikiResult.alreadyKnown.length} already known, ${wikiResult.stillQueued} still queued out of ${wikiResult.totalConsidered} total entries.`
+      `Wikipedia pass complete. ${wikiResult.cards.length} new (${wikiResult.watchlistCount} watchlist, ${wikiResult.cards.length - wikiResult.watchlistCount} throttled), ${wikiResult.alreadyKnown.length} already known, ${wikiResult.stillQueued} still queued out of ${wikiResult.totalConsidered} total entries.`
     );
     wikiResult.cards.forEach((c) => {
       console.log(`  NEW (Wikipedia): ${c.artist} - ${c.albumTitle} (${c.score ?? 'no score'}%)`);
