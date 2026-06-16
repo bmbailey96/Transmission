@@ -47,7 +47,7 @@ exports.handler = async function (event) {
   const { allItems, feedErrors, counts } = await fetchAllFeedItems();
   const { cards, alreadyKnown, skipped } = await runDiscoveryPass(allItems);
 
-  let wikiResult = { cards: [], alreadyKnown: [], stillQueued: 0, totalConsidered: 0 };
+  let wikiResult = { cards: [], alreadyKnown: [], stillQueued: 0, totalConsidered: 0, watchlistCount: 0 };
   let wikiError = null;
   try {
     const wikiEntries = await fetchUpcomingAlbums();
@@ -93,6 +93,7 @@ ${
     : '<p>Nothing in this batch was already known.</p>'
 }
 <h2>Wikipedia album list: found and scored just now (${wikiResult.cards.length})</h2>
+${!wikiError && wikiResult.cards.length ? `<p style="color:#666;font-size:.85em;">${wikiResult.watchlistCount} from already-loved artists/labels jumping the queue, ${wikiResult.cards.length - wikiResult.watchlistCount} from the regular throttled batch.</p>` : ''}
 ${
   wikiError
     ? `<p class="err">Wikipedia fetch error: ${wikiError}</p>`
