@@ -1,24 +1,18 @@
 const { connectLambda } = require('@netlify/blobs');
-const { parseRssFeed } = require('../../lib/discovery/parseRssFeed');
+const { fetchAllFeedItems } = require('../../lib/discovery/fetchAllFeedItems');
 const { runDiscoveryPass } = require('../../lib/discovery/runDiscoveryPass');
-
-const FEED_URL = 'https://www.brooklynvegan.com/feed/';
-const ITEM_LIMIT = 6;
 
 exports.handler = async function (event) {
   connectLambda(event);
 
-  let items;
-  try {
-    items = await parseRssFeed(FEED_URL);
-  } catch (err) {
-    console.error('Scheduled discovery: feed fetch failed:', err.message);
-    return { statusCode: 200, body: 'feed fetch failed' };
+  const { allItems, feedErrors, counts } = await fetchAllFeedItems();
+
+  if (feedErrors.length) {
+    feedErrors.forEach((e) => console.error(`Scheduled discovery: ${e.feed} feed fetch failed:`, e.error));
   }
+  console.log('Items pulled per feed:', counts.map((c) => `${c.feed}=${c.count}`).join(', '));
 
-  items = items.slice(0, ITEM_LIMIT);
-
-  const { cards, alreadyKnown, skipped } = await runDiscoveryPass(items);
+  const { cards, alreadyKnown, skipped } = await runDiscoveryPass(allItems);
 
   console.log(
     `Scheduled discovery run complete. ${cards.length} new, ${alreadyKnown.length} already known, ${skipped.length} skipped.`
