@@ -1,9 +1,7 @@
 const { connectLambda } = require('@netlify/blobs');
 const { parseRssFeed } = require('../../lib/discovery/parseRssFeed');
-const { extractCandidate } = require('../../lib/discovery/extractCandidate');
-const { scoreRelease } = require('../../lib/scoring/scoreRelease');
-const { fetchArt } = require('../../lib/art/fetchArt');
-const { upsertRelease, getRelease, getAllReleases } = require('../../lib/storage/releaseStore');
+const { runDiscoveryPass } = require('../../lib/discovery/runDiscoveryPass');
+const { getAllReleases } = require('../../lib/storage/releaseStore');
 
 const FEED_URL = 'https://www.brooklynvegan.com/feed/';
 const ITEM_LIMIT = 6;
@@ -26,68 +24,6 @@ function renderCard(c) {
       ${c.saveError ? `<div class="reason err">save failed: ${c.saveError}</div>` : ''}
     </div>
   </div>`;
-}
-
-async function processItem(item) {
-  let extracted;
-  try {
-    extracted = await extractCandidate(item);
-  } catch (err) {
-    return { skipped: `${item.title} (extraction failed: ${err.message})` };
-  }
-
-  if (!extracted.isAlbumAnnouncement) {
-    return { skipped: item.title };
-  }
-
-  let existing = null;
-  try {
-    existing = await getRelease(extracted.artist, extracted.albumTitle);
-  } catch (err) {
-    existing = null;
-  }
-
-  if (existing) {
-    return { alreadyKnown: `${extracted.artist} - ${extracted.albumTitle}` };
-  }
-
-  const candidate = {
-    artist: extracted.artist,
-    albumTitle: extracted.albumTitle,
-    releaseDate: extracted.releaseDate,
-    link: item.link,
-  };
-
-  const [scoreResult, artResult] = await Promise.all([
-    scoreRelease({
-      artist: extracted.artist,
-      title: extracted.albumTitle,
-      evidenceText: extracted.evidenceText,
-    }).catch((err) => ({ error: err.message })),
-    fetchArt({ artist: extracted.artist, title: extracted.albumTitle }).catch(() => ({
-      url: null,
-      source: 'error',
-    })),
-  ]);
-
-  if (scoreResult.error) {
-    candidate.scoreError = scoreResult.error;
-  } else {
-    candidate.score = scoreResult.score;
-    candidate.evidenceLevel = scoreResult.evidenceLevel;
-    candidate.reasoning = scoreResult.reasoning;
-  }
-  candidate.art = artResult;
-
-  if (!candidate.scoreError) {
-    try {
-      await upsertRelease(candidate);
-    } catch (err) {
-      candidate.saveError = err.message;
-    }
-  }
-
-  return { card: candidate };
 }
 
 function sortByDate(releases) {
@@ -123,10 +59,7 @@ exports.handler = async function (event) {
 
   items = items.slice(0, ITEM_LIMIT);
 
-  const results = await Promise.all(items.map(processItem));
-  const cards = results.filter((r) => r.card).map((r) => r.card);
-  const alreadyKnown = results.filter((r) => r.alreadyKnown).map((r) => r.alreadyKnown);
-  const skipped = results.filter((r) => r.skipped).map((r) => r.skipped);
+  const { cards, alreadyKnown, skipped } = await runDiscoveryPass(items);
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Discovery test</title>
 <style>
