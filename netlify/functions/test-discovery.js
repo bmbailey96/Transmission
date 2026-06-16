@@ -4,7 +4,7 @@ const { scoreRelease } = require('../../lib/scoring/scoreRelease');
 const { fetchArt } = require('../../lib/art/fetchArt');
 
 const FEED_URL = 'https://www.brooklynvegan.com/feed/';
-const ITEM_LIMIT = 8;
+const ITEM_LIMIT = 6;
 
 function renderSkipped(title) {
   return `<div class="skip">skipped: ${title}</div>`;
@@ -26,6 +26,49 @@ function renderCard(c) {
   </div>`;
 }
 
+async function processItem(item) {
+  let extracted;
+  try {
+    extracted = await extractCandidate(item);
+  } catch (err) {
+    return { skipped: `${item.title} (extraction failed: ${err.message})` };
+  }
+
+  if (!extracted.isAlbumAnnouncement) {
+    return { skipped: item.title };
+  }
+
+  const candidate = {
+    artist: extracted.artist,
+    albumTitle: extracted.albumTitle,
+    releaseDate: extracted.releaseDate,
+    link: item.link,
+  };
+
+  const [scoreResult, artResult] = await Promise.all([
+    scoreRelease({
+      artist: extracted.artist,
+      title: extracted.albumTitle,
+      evidenceText: extracted.evidenceText,
+    }).catch((err) => ({ error: err.message })),
+    fetchArt({ artist: extracted.artist, title: extracted.albumTitle }).catch(() => ({
+      url: null,
+      source: 'error',
+    })),
+  ]);
+
+  if (scoreResult.error) {
+    candidate.scoreError = scoreResult.error;
+  } else {
+    candidate.score = scoreResult.score;
+    candidate.evidenceLevel = scoreResult.evidenceLevel;
+    candidate.reasoning = scoreResult.reasoning;
+  }
+  candidate.art = artResult;
+
+  return { card: candidate };
+}
+
 exports.handler = async function () {
   let items;
   try {
@@ -40,51 +83,13 @@ exports.handler = async function () {
 
   items = items.slice(0, ITEM_LIMIT);
 
-  const cards = [];
-  const skipped = [];
+  // Every item's extraction, and for whichever pass, its scoring and art too, all run
+  // at once instead of one at a time. Sequential was almost certainly what blew past
+  // Netlify's function timeout with this many stacked API calls.
+  const results = await Promise.all(items.map(processItem));
 
-  for (const item of items) {
-    let extracted;
-    try {
-      extracted = await extractCandidate(item);
-    } catch (err) {
-      skipped.push(`${item.title} (extraction failed: ${err.message})`);
-      continue;
-    }
-
-    if (!extracted.isAlbumAnnouncement) {
-      skipped.push(item.title);
-      continue;
-    }
-
-    const candidate = {
-      artist: extracted.artist,
-      albumTitle: extracted.albumTitle,
-      releaseDate: extracted.releaseDate,
-      link: item.link,
-    };
-
-    try {
-      const scored = await scoreRelease({
-        artist: extracted.artist,
-        title: extracted.albumTitle,
-        evidenceText: extracted.evidenceText,
-      });
-      candidate.score = scored.score;
-      candidate.evidenceLevel = scored.evidenceLevel;
-      candidate.reasoning = scored.reasoning;
-    } catch (err) {
-      candidate.scoreError = err.message;
-    }
-
-    try {
-      candidate.art = await fetchArt({ artist: extracted.artist, title: extracted.albumTitle });
-    } catch (err) {
-      candidate.art = { url: null, source: 'error' };
-    }
-
-    cards.push(candidate);
-  }
+  const cards = results.filter((r) => r.card).map((r) => r.card);
+  const skipped = results.filter((r) => r.skipped).map((r) => r.skipped);
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Discovery test</title>
 <style>
@@ -111,5 +116,4 @@ ${cards.length ? cards.map(renderCard).join('\n') : '<p>None this run, try again
 ${skipped.length ? skipped.map(renderSkipped).join('\n') : '<p>Nothing skipped.</p>'}
 </body></html>`;
 
-  return { statusCode: 200, headers: { 'Content-Type': 'text/html' }, body: html };
-};
+  return { statusCode: 200,
