@@ -5,3 +5,6 @@
 
 [functions]
   node_bundler = "esbuild"
+
+[functions."scheduled-discovery"]
+  schedule = "@hourly"
