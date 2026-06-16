@@ -111,14 +111,23 @@
     outline-offset: 2px;
   }
 
-  .datehead {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    margin: 44px 0 16px;
+  .day-group {
+    margin-top: 40px;
   }
 
-  .datehead:first-of-type { margin-top: 0; }
+  .day-group:first-of-type { margin-top: 0; }
+
+  .datehead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-bottom: 10px;
+  }
 
   .datehead .label {
     font-family: 'JetBrains Mono', ui-monospace, monospace;
@@ -137,6 +146,34 @@
     background: var(--hairline);
   }
 
+  .score-pin {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--bg);
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-bottom: 10px;
+    margin-bottom: 4px;
+  }
+
+  .score-pin[hidden] { display: none; }
+
+  .hide-control {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: none;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 3px 9px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .hide-control:hover { color: var(--text); border-color: var(--muted); }
+  .hide-control:focus-visible { outline: 2px solid var(--signal); outline-offset: 1px; }
+  .hide-control[hidden] { display: none; }
+
   .card {
     display: flex;
     gap: 14px;
@@ -144,7 +181,10 @@
     border-bottom: 1px solid var(--hairline);
   }
 
-  .card:last-child { border-bottom: none; }
+  .day-group > .card:last-child,
+  .reveal-cards > .card:last-child {
+    border-bottom: none;
+  }
 
   .art {
     width: 64px;
@@ -256,40 +296,39 @@
     outline-offset: 1px;
   }
 
-  .reason-extra {
-    margin-top: 8px;
-    font-size: 0.88rem;
-    color: #9a9aa1;
-  }
-
-  .reason-extra[hidden] { display: none; }
-
-  .reveal {
+  .reveal-toggle {
+    display: block;
     margin-top: 14px;
-  }
-
-  .reveal summary {
-    cursor: pointer;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.78rem;
     color: var(--muted);
-    list-style: none;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
   }
 
-  .reveal summary::-webkit-details-marker { display: none; }
+  .reveal-toggle::before { content: '+ '; color: var(--dim); }
+  .reveal-toggle:hover { color: var(--text); }
+  .reveal-toggle:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  .reveal-toggle[hidden] { display: none; }
 
-  .reveal summary::before {
-    content: '+ ';
-    color: var(--dim);
+  .reveal {
+    scroll-margin-top: 56px;
   }
 
-  .reveal[open] summary::before {
-    content: '\2212 ';
+  .reveal-cards {
+    margin-top: 14px;
+    padding-left: 14px;
+    border-left: 2px solid var(--hairline);
   }
 
-  .reveal .card {
+  .reveal-cards .card {
     opacity: 0.72;
   }
+
+  .reveal-cards[hidden] { display: none; }
 
   .empty, .error {
     color: var(--muted);
@@ -317,7 +356,11 @@
 
   @media (max-width: 480px) {
     .art { width: 52px; height: 52px; }
-    .title-row { flex-wrap: wrap; }
+    .title-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
   }
 </style>
 </head>
@@ -344,10 +387,12 @@
 
 <script>
 const HIGH_THRESHOLD = 50;
+const SNIPPET_MAX_CHARS = 60;
 
 let allUpcoming = [];
 let mode = 'date'; // 'date' | 'score'
 let cardCounter = 0;
+let cardTextMap = {};
 
 function dayLabel(dateStr) {
   const today = new Date();
@@ -377,14 +422,30 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+function fullTextFor(r) {
+  if (r.headline && r.reasoning && r.reasoning.trim() !== r.headline.trim()) {
+    return r.headline.trim() + ' ' + r.reasoning.trim();
+  }
+  return (r.headline || r.reasoning || '').trim();
+}
+
+function truncateText(text, maxChars) {
+  if (!text || text.length <= maxChars) return { snippet: text, truncated: false };
+  let cut = text.slice(0, maxChars);
+  const lastSpace = cut.lastIndexOf(' ');
+  if (lastSpace > 20) cut = cut.slice(0, lastSpace);
+  return { snippet: cut.trim() + '\u2026', truncated: true };
+}
+
 function renderCard(r) {
-  const id = 'reason-' + (cardCounter++);
+  const id = 'text-' + (cardCounter++);
   const artHtml = r.art && r.art.url
     ? `<img class="art" src="${escapeHtml(r.art.url)}" alt="">`
     : `<div class="art placeholder">no art</div>`;
 
-  const headlineText = r.headline || r.reasoning || '';
-  const hasExtra = !!(r.headline && r.reasoning && r.reasoning.trim() !== r.headline.trim());
+  const full = fullTextFor(r);
+  const { snippet, truncated } = truncateText(full, SNIPPET_MAX_CHARS);
+  cardTextMap[id] = { snippet, full };
 
   const dateLine = mode === 'score' && r.releaseDate
     ? `<div class="inline-date mono">${shortDate(r.releaseDate)}</div>`
@@ -403,10 +464,21 @@ function renderCard(r) {
         </div>
         ${dateLine}
         <div class="headline-row">
-          <div class="headline">${escapeHtml(headlineText)}</div>
-          ${hasExtra ? `<button class="toggle-reason" data-target="${id}" aria-expanded="false" aria-label="show more">+</button>` : ''}
+          <div class="headline" id="${id}">${escapeHtml(snippet)}</div>
+          ${truncated ? `<button class="toggle-reason" data-target="${id}" aria-expanded="false" aria-label="show more">+</button>` : ''}
         </div>
-        ${hasExtra ? `<div class="reason-extra" id="${id}" hidden>${escapeHtml(r.reasoning)}</div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderRevealSection(low, revealId) {
+  if (!low.length) return '';
+  return `
+    <div class="reveal" id="${revealId}">
+      <button class="reveal-toggle mono">${low.length} below ${HIGH_THRESHOLD}%</button>
+      <div class="reveal-cards" hidden>
+        ${low.map(renderCard).join('')}
       </div>
     </div>
   `;
@@ -424,24 +496,22 @@ function renderDateMode(releases) {
     const high = sorted.filter((r) => r.score >= HIGH_THRESHOLD);
     const low = sorted.filter((r) => r.score < HIGH_THRESHOLD);
     const label = dayLabel(d);
+    const revealId = 'reveal-' + d;
+    const hideControl = low.length
+      ? `<button class="hide-control mono" hidden>hide ${low.length}</button>`
+      : '';
 
-    let html = `
-      <div class="datehead">
-        <span class="label ${label.future ? 'future' : ''} mono">${label.text}</span>
-        <span class="rule"></span>
+    return `
+      <div class="day-group">
+        <div class="datehead" data-reveal-id="${revealId}">
+          <span class="label ${label.future ? 'future' : ''} mono">${label.text}</span>
+          ${hideControl}
+          <span class="rule"></span>
+        </div>
+        ${high.map(renderCard).join('')}
+        ${renderRevealSection(low, revealId)}
       </div>
-      ${high.map(renderCard).join('')}
     `;
-
-    if (low.length) {
-      html += `
-        <details class="reveal">
-          <summary>${low.length} more releasing this day</summary>
-          ${low.map(renderCard).join('')}
-        </details>
-      `;
-    }
-    return html;
   }).join('');
 }
 
@@ -449,22 +519,22 @@ function renderScoreMode(releases) {
   const sorted = [...releases].sort((a, b) => b.score - a.score);
   const high = sorted.filter((r) => r.score >= HIGH_THRESHOLD);
   const low = sorted.filter((r) => r.score < HIGH_THRESHOLD);
+  const revealId = 'reveal-score';
 
-  let html = high.map(renderCard).join('');
+  const pin = low.length
+    ? `<div class="score-pin" hidden data-reveal-id="${revealId}"><button class="hide-control mono">hide ${low.length}</button></div>`
+    : '';
 
-  if (low.length) {
-    html += `
-      <details class="reveal">
-        <summary>${low.length} more below ${HIGH_THRESHOLD}%</summary>
-        ${low.map(renderCard).join('')}
-      </details>
-    `;
-  }
-  return html;
+  return `
+    ${pin}
+    ${high.map(renderCard).join('')}
+    ${renderRevealSection(low, revealId)}
+  `;
 }
 
 function renderFeed() {
   cardCounter = 0;
+  cardTextMap = {};
   const feed = document.getElementById('feed');
   if (!allUpcoming.length) {
     feed.innerHTML = '<p class="empty mono">Nothing scored yet for what\'s ahead. The pipeline runs hourly, check back soon.</p>';
@@ -483,23 +553,64 @@ function setMode(next) {
   renderFeed();
 }
 
+function expandReveal(reveal) {
+  if (!reveal) return;
+  const cards = reveal.querySelector('.reveal-cards');
+  const trigger = reveal.querySelector('.reveal-toggle');
+  cards.removeAttribute('hidden');
+  trigger.setAttribute('hidden', '');
+  const pinned = document.querySelector('[data-reveal-id="' + reveal.id + '"]');
+  if (pinned) {
+    pinned.removeAttribute('hidden');
+    const hideCtl = pinned.querySelector('.hide-control');
+    if (hideCtl) hideCtl.removeAttribute('hidden');
+  }
+}
+
+function collapseReveal(reveal) {
+  if (!reveal) return;
+  const cards = reveal.querySelector('.reveal-cards');
+  const trigger = reveal.querySelector('.reveal-toggle');
+  cards.setAttribute('hidden', '');
+  trigger.removeAttribute('hidden');
+  const pinned = document.querySelector('[data-reveal-id="' + reveal.id + '"]');
+  if (pinned) {
+    const hideCtl = pinned.querySelector('.hide-control');
+    if (hideCtl) hideCtl.setAttribute('hidden', '');
+    if (pinned.classList.contains('score-pin')) pinned.setAttribute('hidden', '');
+  }
+  reveal.scrollIntoView({ block: 'start' });
+}
+
 document.getElementById('sort-date').addEventListener('click', () => setMode('date'));
 document.getElementById('sort-score').addEventListener('click', () => setMode('score'));
 
 document.getElementById('feed').addEventListener('click', (e) => {
-  const btn = e.target.closest('.toggle-reason');
-  if (!btn) return;
-  const target = document.getElementById(btn.dataset.target);
-  if (!target) return;
-  const isHidden = target.hasAttribute('hidden');
-  if (isHidden) {
-    target.removeAttribute('hidden');
-    btn.textContent = '\u2212';
-    btn.setAttribute('aria-expanded', 'true');
-  } else {
-    target.setAttribute('hidden', '');
-    btn.textContent = '+';
-    btn.setAttribute('aria-expanded', 'false');
+  const reasonBtn = e.target.closest('.toggle-reason');
+  if (reasonBtn) {
+    const id = reasonBtn.dataset.target;
+    const textEl = document.getElementById(id);
+    const stored = cardTextMap[id];
+    if (textEl && stored) {
+      const expanded = reasonBtn.getAttribute('aria-expanded') === 'true';
+      textEl.textContent = expanded ? stored.snippet : stored.full;
+      reasonBtn.textContent = expanded ? '+' : '\u2212';
+      reasonBtn.setAttribute('aria-expanded', String(!expanded));
+    }
+    return;
+  }
+
+  const revealBtn = e.target.closest('.reveal-toggle');
+  if (revealBtn) {
+    expandReveal(revealBtn.closest('.reveal'));
+    return;
+  }
+
+  const hideBtn = e.target.closest('.hide-control');
+  if (hideBtn) {
+    const owner = hideBtn.closest('[data-reveal-id]');
+    if (owner) collapseReveal(document.getElementById(owner.dataset.revealId));
+    return;
   }
 });
 
