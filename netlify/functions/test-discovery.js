@@ -1,10 +1,7 @@
 const { connectLambda } = require('@netlify/blobs');
-const { parseRssFeed } = require('../../lib/discovery/parseRssFeed');
+const { fetchAllFeedItems } = require('../../lib/discovery/fetchAllFeedItems');
 const { runDiscoveryPass } = require('../../lib/discovery/runDiscoveryPass');
 const { getAllReleases } = require('../../lib/storage/releaseStore');
-
-const FEED_URL = 'https://www.brooklynvegan.com/feed/';
-const ITEM_LIMIT = 6;
 
 function renderSkipped(title) {
   return `<div class="skip">skipped: ${title}</div>`;
@@ -15,7 +12,7 @@ function renderCard(c) {
     ${c.art?.url ? `<img src="${c.art.url}" />` : `<div class="placeholder">no art yet</div>`}
     <div class="info">
       <div class="title">${c.artist} - ${c.albumTitle}</div>
-      <div class="date">${c.releaseDate || 'date not stated'}</div>
+      <div class="date">${c.releaseDate || 'date not stated'}${c.sourceFeed ? ` &middot; ${c.sourceFeed}` : ''}</div>
       ${
         c.score !== undefined
           ? `<div class="score">${c.score}% (${c.evidenceLevel})</div><div class="reason">${c.reasoning}</div>`
@@ -46,20 +43,9 @@ exports.handler = async function (event) {
     storageError = err.message;
   }
 
-  let items;
-  try {
-    items = await parseRssFeed(FEED_URL);
-  } catch (err) {
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'text/html' },
-      body: `<p>Feed fetch failed: ${err.message}</p>`,
-    };
-  }
+  const { allItems, feedErrors, counts } = await fetchAllFeedItems();
 
-  items = items.slice(0, ITEM_LIMIT);
-
-  const { cards, alreadyKnown, skipped } = await runDiscoveryPass(items);
+  const { cards, alreadyKnown, skipped } = await runDiscoveryPass(allItems);
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Discovery test</title>
 <style>
@@ -77,9 +63,10 @@ h2{font-size:.95em;color:#888;margin-top:36px;border-bottom:1px solid #333;paddi
 .skip{color:#666;font-size:.85em;margin-bottom:6px}
 a{color:#9fd}
 </style></head><body>
-<h1>Discovery test: BrooklynVegan feed, live</h1>
+<h1>Discovery test: live across all feeds</h1>
 <p><a href="/">&larr; back</a></p>
-<p>Pulled the ${items.length} most recent posts just now. Whatever passed got scored, art-fetched, and saved to storage.</p>
+<p>Pulled from ${counts.length} feeds just now: ${counts.map((c) => `${c.feed} (${c.count})`).join(', ')}.</p>
+${feedErrors.length ? `<p class="err">Feed errors: ${feedErrors.map((e) => `${e.feed}: ${e.error}`).join(' | ')}</p>` : ''}
 <h2>Already saved from before this run (${alreadySaved.length})</h2>
 ${
   storageError
