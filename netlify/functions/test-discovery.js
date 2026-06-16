@@ -2,6 +2,7 @@ const { parseRssFeed } = require('../../lib/discovery/parseRssFeed');
 const { extractCandidate } = require('../../lib/discovery/extractCandidate');
 const { scoreRelease } = require('../../lib/scoring/scoreRelease');
 const { fetchArt } = require('../../lib/art/fetchArt');
+const { upsertRelease, getAllReleases } = require('../../lib/storage/releaseStore');
 
 const FEED_URL = 'https://www.brooklynvegan.com/feed/';
 const ITEM_LIMIT = 6;
@@ -15,13 +16,12 @@ function renderCard(c) {
     ${c.art?.url ? `<img src="${c.art.url}" />` : `<div class="placeholder">no art yet</div>`}
     <div class="info">
       <div class="title">${c.artist} - ${c.albumTitle}</div>
-      <div class="date">${c.releaseDate || 'date not stated in this post'}</div>
+      <div class="date">${c.releaseDate || 'date not stated'}</div>
       ${
         c.score !== undefined
           ? `<div class="score">${c.score}% (${c.evidenceLevel})</div><div class="reason">${c.reasoning}</div>`
           : `<div class="reason err">scoring failed: ${c.scoreError}</div>`
       }
-      <div class="src"><a href="${c.link}">source</a></div>
     </div>
   </div>`;
 }
@@ -66,7 +66,24 @@ async function processItem(item) {
   }
   candidate.art = artResult;
 
+  if (!candidate.scoreError) {
+    try {
+      await upsertRelease(candidate);
+    } catch (err) {
+      candidate.saveError = err.message;
+    }
+  }
+
   return { card: candidate };
+}
+
+function sortByDate(releases) {
+  return [...releases].sort((a, b) => {
+    if (!a.releaseDate && !b.releaseDate) return 0;
+    if (!a.releaseDate) return 1;
+    if (!b.releaseDate) return -1;
+    return a.releaseDate.localeCompare(b.releaseDate);
+  });
 }
 
 exports.handler = async function () {
@@ -83,13 +100,17 @@ exports.handler = async function () {
 
   items = items.slice(0, ITEM_LIMIT);
 
-  // Every item's extraction, and for whichever pass, its scoring and art too, all run
-  // at once instead of one at a time. Sequential was almost certainly what blew past
-  // Netlify's function timeout with this many stacked API calls.
   const results = await Promise.all(items.map(processItem));
-
   const cards = results.filter((r) => r.card).map((r) => r.card);
   const skipped = results.filter((r) => r.skipped).map((r) => r.skipped);
+
+  let allReleases = [];
+  let storageError = null;
+  try {
+    allReleases = sortByDate(await getAllReleases());
+  } catch (err) {
+    storageError = err.message;
+  }
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Discovery test</title>
 <style>
@@ -109,11 +130,19 @@ a{color:#9fd}
 </style></head><body>
 <h1>Discovery test: BrooklynVegan feed, live</h1>
 <p><a href="/">&larr; back</a></p>
-<p>Pulled the ${items.length} most recent posts from the real feed just now, ran each one through the extraction step to decide if it's actually a new album announcement.</p>
-<h2>Flagged as album announcements (${cards.length})</h2>
-${cards.length ? cards.map(renderCard).join('\n') : '<p>None this run, try again later, the feed changes constantly.</p>'}
-<h2>Correctly skipped (${skipped.length})</h2>
+<p>Pulled the ${items.length} most recent posts just now. Whatever passed got scored, art-fetched, and saved to storage.</p>
+<h2>Found and saved this run (${cards.length})</h2>
+${cards.length ? cards.map(renderCard).join('\n') : '<p>None this run, try again later.</p>'}
+<h2>Skipped this run (${skipped.length})</h2>
 ${skipped.length ? skipped.map(renderSkipped).join('\n') : '<p>Nothing skipped.</p>'}
+<h2>Everything accumulated so far (${allReleases.length})</h2>
+${
+  storageError
+    ? `<p class="err">Storage error: ${storageError}</p>`
+    : allReleases.length
+    ? allReleases.map(renderCard).join('\n')
+    : '<p>Nothing saved yet.</p>'
+}
 </body></html>`;
 
   return { statusCode: 200, headers: { 'Content-Type': 'text/html' }, body: html };
