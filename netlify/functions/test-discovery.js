@@ -1,6 +1,7 @@
 const { connectLambda } = require('@netlify/blobs');
 const { fetchAllFeedItems } = require('../../lib/discovery/fetchAllFeedItems');
-const { runDiscoveryPass } = require('../../lib/discovery/runDiscoveryPass');
+const { fetchUpcomingAlbums } = require('../../lib/discovery/wikipediaAlbumList');
+const { runDiscoveryPass, runStructuredPass } = require('../../lib/discovery/runDiscoveryPass');
 const { getAllReleases } = require('../../lib/storage/releaseStore');
 
 function renderSkipped(title) {
@@ -44,8 +45,16 @@ exports.handler = async function (event) {
   }
 
   const { allItems, feedErrors, counts } = await fetchAllFeedItems();
-
   const { cards, alreadyKnown, skipped } = await runDiscoveryPass(allItems);
+
+  let wikiResult = { cards: [], alreadyKnown: [], stillQueued: 0, totalConsidered: 0 };
+  let wikiError = null;
+  try {
+    const wikiEntries = await fetchUpcomingAlbums();
+    wikiResult = await runStructuredPass(wikiEntries);
+  } catch (err) {
+    wikiError = err.message;
+  }
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Discovery test</title>
 <style>
@@ -75,10 +84,23 @@ ${
     ? alreadySaved.map(renderCard).join('\n')
     : '<p>Nothing saved yet, this would be the first run to save anything.</p>'
 }
-<h2>Found and scored just now, genuinely new (${cards.length})</h2>
+<h2>RSS feeds: found and scored just now (${cards.length})</h2>
 ${cards.length ? cards.map(renderCard).join('\n') : '<p>None this run.</p>'}
-<h2>Already known, left alone (${alreadyKnown.length})</h2>
-${alreadyKnown.length ? alreadyKnown.map((t) => `<div class="skip">already scored earlier: ${t}</div>`).join('\n') : '<p>Nothing in this batch was already known.</p>'}
+<h2>Already known, left alone (${alreadyKnown.length + wikiResult.alreadyKnown.length})</h2>
+${
+  alreadyKnown.length || wikiResult.alreadyKnown.length
+    ? [...alreadyKnown, ...wikiResult.alreadyKnown].map((t) => `<div class="skip">already scored earlier: ${t}</div>`).join('\n')
+    : '<p>Nothing in this batch was already known.</p>'
+}
+<h2>Wikipedia album list: found and scored just now (${wikiResult.cards.length})</h2>
+${
+  wikiError
+    ? `<p class="err">Wikipedia fetch error: ${wikiError}</p>`
+    : wikiResult.cards.length
+    ? wikiResult.cards.map(renderCard).join('\n')
+    : '<p>None this run.</p>'
+}
+${!wikiError ? `<p style="color:#666;font-size:.85em;">${wikiResult.totalConsidered} total entries on the page right now, ${wikiResult.stillQueued} still waiting to be scored on future runs.</p>` : ''}
 <h2>Skipped this run (${skipped.length})</h2>
 ${skipped.length ? skipped.map(renderSkipped).join('\n') : '<p>Nothing skipped.</p>'}
 </body></html>`;
