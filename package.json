@@ -1,0 +1,16 @@
+{
+  "name": "transmission",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Personal release radar. Surfaces upcoming albums worth knowing about, scored against one taste profile, with quietly self-correcting date verification and a real cover art fallback chain.",
+  "scripts": {
+    "test:scoring": "node test/runScoring.js",
+    "test:art": "node test/runArtFetch.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
