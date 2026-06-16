@@ -91,6 +91,14 @@ function sortByDate(releases) {
 exports.handler = async function (event) {
   connectLambda(event);
 
+  let alreadySaved = [];
+  let storageError = null;
+  try {
+    alreadySaved = sortByDate(await getAllReleases());
+  } catch (err) {
+    storageError = err.message;
+  }
+
   let items;
   try {
     items = await parseRssFeed(FEED_URL);
@@ -107,14 +115,6 @@ exports.handler = async function (event) {
   const results = await Promise.all(items.map(processItem));
   const cards = results.filter((r) => r.card).map((r) => r.card);
   const skipped = results.filter((r) => r.skipped).map((r) => r.skipped);
-
-  let allReleases = [];
-  let storageError = null;
-  try {
-    allReleases = sortByDate(await getAllReleases());
-  } catch (err) {
-    storageError = err.message;
-  }
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Discovery test</title>
 <style>
@@ -135,18 +135,18 @@ a{color:#9fd}
 <h1>Discovery test: BrooklynVegan feed, live</h1>
 <p><a href="/">&larr; back</a></p>
 <p>Pulled the ${items.length} most recent posts just now. Whatever passed got scored, art-fetched, and saved to storage.</p>
-<h2>Found and saved this run (${cards.length})</h2>
-${cards.length ? cards.map(renderCard).join('\n') : '<p>None this run, try again later.</p>'}
-<h2>Skipped this run (${skipped.length})</h2>
-${skipped.length ? skipped.map(renderSkipped).join('\n') : '<p>Nothing skipped.</p>'}
-<h2>Everything accumulated so far (${allReleases.length})</h2>
+<h2>Already saved from before this run (${alreadySaved.length})</h2>
 ${
   storageError
     ? `<p class="err">Storage error: ${storageError}</p>`
-    : allReleases.length
-    ? allReleases.map(renderCard).join('\n')
-    : '<p>Nothing saved yet.</p>'
+    : alreadySaved.length
+    ? alreadySaved.map(renderCard).join('\n')
+    : '<p>Nothing saved yet, this would be the first run to save anything.</p>'
 }
+<h2>Found and saved just now (${cards.length})</h2>
+${cards.length ? cards.map(renderCard).join('\n') : '<p>None this run, try again later.</p>'}
+<h2>Skipped this run (${skipped.length})</h2>
+${skipped.length ? skipped.map(renderSkipped).join('\n') : '<p>Nothing skipped.</p>'}
 </body></html>`;
 
   return { statusCode: 200, headers: { 'Content-Type': 'text/html' }, body: html };
