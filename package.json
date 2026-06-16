@@ -8,6 +8,7 @@
     "test:art": "node test/runArtFetch.js"
   },
   "dependencies": {
+    "@netlify/blobs": "^10.7.9",
     "dotenv": "^16.4.5"
   },
   "engines": {
