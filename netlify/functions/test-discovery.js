@@ -23,6 +23,7 @@ function renderCard(c) {
           ? `<div class="score">${c.score}% (${c.evidenceLevel})</div><div class="reason">${c.reasoning}</div>`
           : `<div class="reason err">scoring failed: ${c.scoreError}</div>`
       }
+      ${c.saveError ? `<div class="reason err">save failed: ${c.saveError}</div>` : ''}
     </div>
   </div>`;
 }
