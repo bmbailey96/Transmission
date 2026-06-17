@@ -262,6 +262,16 @@
     flex-shrink: 0;
   }
 
+  .evidence-line {
+    font-size: 0.66rem;
+    letter-spacing: 0.07em;
+    margin: 3px 0 7px;
+  }
+
+  .evidence-line.full { color: var(--signal); }
+  .evidence-line.partial { color: var(--muted); }
+  .evidence-line.none { color: var(--warm); }
+
   .day-group {
     margin-top: 40px;
   }
@@ -628,6 +638,12 @@ function litBars(score) {
   return Math.max(0, Math.min(5, Math.round((score / 100) * 5)));
 }
 
+function evidenceLabel(level) {
+  if (level === 'full') return 'FULL SIGNAL';
+  if (level === 'partial') return 'PARTIAL SIGNAL';
+  return 'NO SIGNAL';
+}
+
 function renderCard(r) {
   const id = 'text-' + (cardCounter++);
   const artHtml = r.art && r.art.url
@@ -637,6 +653,8 @@ function renderCard(r) {
   const full = fullTextFor(r);
   const { snippet, truncated } = truncateText(full, SNIPPET_MAX_CHARS);
   cardTextMap[id] = { snippet, full };
+
+  const evidence = ['full', 'partial', 'none'].includes(r.evidenceLevel) ? r.evidenceLevel : 'none';
 
   const dateLine = mode === 'score' && r.releaseDate
     ? `<div class="inline-date mono">${shortDate(r.releaseDate)}</div>`
@@ -654,6 +672,7 @@ function renderCard(r) {
             <span class="score-num mono">${r.score}%</span>
           </div>
         </div>
+        <div class="evidence-line mono ${evidence}">${evidenceLabel(evidence)}</div>
         ${dateLine}
         <div class="headline-row">
           <div class="headline" id="${id}">${escapeHtml(snippet)}</div>
