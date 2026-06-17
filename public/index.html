@@ -245,6 +245,17 @@
     outline-offset: 2px;
   }
 
+  .new-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    color: var(--warm);
+    border: 1px solid var(--warm);
+    border-radius: 3px;
+    padding: 1px 5px;
+    flex-shrink: 0;
+  }
+
   .day-group {
     margin-top: 40px;
   }
@@ -373,18 +384,30 @@
     text-align: right;
   }
 
-  .score-bar {
-    width: 36px;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--signal-dim);
-    overflow: hidden;
+  .meter {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 17px;
+    flex-shrink: 0;
   }
 
-  .score-bar > div {
-    height: 100%;
-    background: var(--signal);
+  .meter .bar {
+    width: 4px;
+    border-radius: 1px;
+    background: var(--signal-dim);
   }
+
+  .meter .bar.lit {
+    background: var(--signal);
+    box-shadow: 0 0 4px rgba(127, 231, 196, 0.55), 0 0 8px rgba(127, 231, 196, 0.25);
+  }
+
+  .meter .bar:nth-child(1) { height: 5px; }
+  .meter .bar:nth-child(2) { height: 8px; }
+  .meter .bar:nth-child(3) { height: 11px; }
+  .meter .bar:nth-child(4) { height: 14px; }
+  .meter .bar:nth-child(5) { height: 17px; }
 
   .inline-date {
     font-size: 0.72rem;
@@ -517,6 +540,7 @@
   <div class="controls">
     <button id="sort-date" class="sort-btn active mono" aria-pressed="true">BY DATE</button>
     <button id="sort-score" class="sort-btn mono" aria-pressed="false">BY SCORE</button>
+    <button id="filter-recent" class="sort-btn mono" aria-pressed="false" style="margin-left:auto;">RECENT</button>
   </div>
 
   <div id="feed">
@@ -532,9 +556,11 @@
 const HIGH_THRESHOLD = 50;
 const SNIPPET_MAX_CHARS = 60;
 const STRIP_BRIGHT_THRESHOLD = 75;
+const RECENT_DAYS = 3;
 
 let allUpcoming = [];
 let mode = 'date'; // 'date' | 'score'
+let recentOnly = false;
 let cardCounter = 0;
 let cardTextMap = {};
 
@@ -581,6 +607,21 @@ function truncateText(text, maxChars) {
   return { snippet: cut.trim() + '\u2026', truncated: true };
 }
 
+function isRecentlyAnnounced(r) {
+  if (!r.discoveredAt) return false;
+  const discovered = new Date(r.discoveredAt).getTime();
+  if (Number.isNaN(discovered)) return false;
+  return discovered >= Date.now() - RECENT_DAYS * 86400000;
+}
+
+function visibleReleases() {
+  return recentOnly ? allUpcoming.filter(isRecentlyAnnounced) : allUpcoming;
+}
+
+function litBars(score) {
+  return Math.max(0, Math.min(5, Math.round((score / 100) * 5)));
+}
+
 function renderCard(r) {
   const id = 'text-' + (cardCounter++);
   const artHtml = r.art && r.art.url
@@ -602,7 +643,8 @@ function renderCard(r) {
         <div class="title-row">
           <div class="title"><span class="artist">${escapeHtml(r.artist)}</span><span class="sep">&mdash;</span><span class="album">${escapeHtml(r.albumTitle)}</span></div>
           <div class="score-wrap">
-            <div class="score-bar"><div style="width:${r.score}%"></div></div>
+            ${isRecentlyAnnounced(r) ? '<span class="new-tag mono">NEW</span>' : ''}
+            <div class="meter">${[1, 2, 3, 4, 5].map((i) => `<div class="bar${i <= litBars(r.score) ? ' lit' : ''}"></div>`).join('')}</div>
             <span class="score-num mono">${r.score}%</span>
           </div>
         </div>
@@ -740,11 +782,17 @@ function renderFeed() {
   cardCounter = 0;
   cardTextMap = {};
   const feed = document.getElementById('feed');
+  const visible = visibleReleases();
+
   if (!allUpcoming.length) {
     feed.innerHTML = '<p class="empty mono">Nothing scored yet for what\'s ahead. The pipeline runs hourly, check back soon.</p>';
     return;
   }
-  feed.innerHTML = mode === 'date' ? renderDateMode(allUpcoming) : renderScoreMode(allUpcoming);
+  if (!visible.length) {
+    feed.innerHTML = '<p class="empty mono">Nothing newly announced in the last ' + RECENT_DAYS + ' days. Turn off RECENT to see everything.</p>';
+    return;
+  }
+  feed.innerHTML = mode === 'date' ? renderDateMode(visible) : renderScoreMode(visible);
 }
 
 function setMode(next) {
@@ -786,8 +834,17 @@ function collapseReveal(reveal) {
   reveal.scrollIntoView({ block: 'start' });
 }
 
+function toggleRecentFilter() {
+  recentOnly = !recentOnly;
+  const btn = document.getElementById('filter-recent');
+  btn.classList.toggle('active', recentOnly);
+  btn.setAttribute('aria-pressed', String(recentOnly));
+  renderFeed();
+}
+
 document.getElementById('sort-date').addEventListener('click', () => setMode('date'));
 document.getElementById('sort-score').addEventListener('click', () => setMode('score'));
+document.getElementById('filter-recent').addEventListener('click', toggleRecentFilter);
 
 document.getElementById('feed').addEventListener('click', (e) => {
   const reasonBtn = e.target.closest('.toggle-reason');
