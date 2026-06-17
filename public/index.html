@@ -608,10 +608,10 @@ function truncateText(text, maxChars) {
 }
 
 function isRecentlyAnnounced(r) {
-  if (!r.discoveredAt) return false;
-  const discovered = new Date(r.discoveredAt).getTime();
-  if (Number.isNaN(discovered)) return false;
-  return discovered >= Date.now() - RECENT_DAYS * 86400000;
+  if (!r.announcedAt) return false;
+  const announced = new Date(r.announcedAt).getTime();
+  if (Number.isNaN(announced)) return false;
+  return announced >= Date.now() - RECENT_DAYS * 86400000;
 }
 
 function visibleReleases() {
