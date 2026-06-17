@@ -52,7 +52,7 @@
     display: flex;
     align-items: center;
     gap: 20px;
-    padding: 14px 0 26px;
+    padding: 14px 0 14px;
   }
 
   .console::before {
@@ -561,7 +561,7 @@
 <script>
 const HIGH_THRESHOLD = 50;
 const SNIPPET_MAX_CHARS = 60;
-const STRIP_BRIGHT_THRESHOLD = 75;
+const STRIP_BRIGHT_THRESHOLD = 65;
 const RECENT_DAYS = 14;
 
 let allUpcoming = [];
@@ -731,7 +731,12 @@ function dayOfYear(d) {
 
 function stripDotSize(score) {
   const clamped = Math.max(HIGH_THRESHOLD, Math.min(100, score));
-  return 4 + ((clamped - HIGH_THRESHOLD) / (100 - HIGH_THRESHOLD)) * 12;
+  if (clamped < STRIP_BRIGHT_THRESHOLD) {
+    const t = (clamped - HIGH_THRESHOLD) / (STRIP_BRIGHT_THRESHOLD - HIGH_THRESHOLD);
+    return 3 + t * 3; // regular band: 3-6px
+  }
+  const t = (clamped - STRIP_BRIGHT_THRESHOLD) / (100 - STRIP_BRIGHT_THRESHOLD);
+  return 10 + t * 10; // bright band: 10-20px
 }
 
 function renderYearStrip(releases) {
