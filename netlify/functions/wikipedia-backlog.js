@@ -2,11 +2,11 @@ const { runWikipediaBackfill } = require('../../lib/discovery/runWikipediaBackfi
 
 exports.handler = async function (event) {
   const requestedMax = parseInt(event?.queryStringParameters?.max, 10);
-  const maxPerRun = Number.isInteger(requestedMax) && requestedMax > 0 ? Math.min(requestedMax, 3) : undefined;
+  const maxPerRun = Number.isInteger(requestedMax) && requestedMax >= 0 ? Math.min(requestedMax, 3) : undefined;
 
   let output;
   try {
-    output = await runWikipediaBackfill(maxPerRun ? { maxPerRun } : undefined);
+    output = await runWikipediaBackfill(maxPerRun !== undefined ? { maxPerRun } : undefined);
   } catch (err) {
     return {
       statusCode: 200,
