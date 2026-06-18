@@ -1,9 +1,12 @@
 const { runAlreadyReleasedMove } = require('../../lib/discovery/runAlreadyReleasedMove');
 
-exports.handler = async function () {
+exports.handler = async function (event) {
+  const requestedMax = parseInt(event?.queryStringParameters?.max, 10);
+  const maxPerRun = Number.isInteger(requestedMax) && requestedMax > 0 ? Math.min(requestedMax, 3) : undefined;
+
   let output;
   try {
-    output = await runAlreadyReleasedMove();
+    output = await runAlreadyReleasedMove(maxPerRun ? { maxPerRun } : undefined);
   } catch (err) {
     return {
       statusCode: 200,
