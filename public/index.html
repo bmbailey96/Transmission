@@ -272,6 +272,32 @@
   .evidence-line.partial { color: var(--muted); }
   .evidence-line.none { color: var(--warm); }
 
+  .tracks-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 7px;
+  }
+
+  .track-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    border: 1px solid var(--hairline);
+    border-radius: 3px;
+    padding: 2px 6px;
+  }
+
+  .view-tabs {
+    margin-bottom: 22px;
+  }
+
+  .view-tabs .sort-btn {
+    font-size: 0.76rem;
+    padding: 6px 14px;
+  }
+
   .day-group {
     margin-top: 40px;
   }
@@ -551,6 +577,11 @@
     <div class="wordmark-big">TRANSMISSION</div>
   </header>
 
+  <div class="controls view-tabs">
+    <button id="view-upcoming" class="sort-btn active mono" aria-pressed="true">UPCOMING</button>
+    <button id="view-released" class="sort-btn mono" aria-pressed="false">ALREADY OUT</button>
+  </div>
+
   <div class="yearstrip" id="yearstrip"></div>
 
   <div class="controls">
@@ -575,6 +606,8 @@ const STRIP_BRIGHT_THRESHOLD = 65;
 const RECENT_DAYS = 14;
 
 let allUpcoming = [];
+let allReleased = [];
+let view = 'upcoming'; // 'upcoming' | 'released'
 let mode = 'date'; // 'date' | 'score'
 let recentOnly = false;
 let cardCounter = 0;
@@ -644,6 +677,11 @@ function evidenceLabel(level) {
   return 'NO SIGNAL';
 }
 
+function renderTracksLine(r) {
+  if (r.category !== 'already-released' || !Array.isArray(r.standoutTracks) || !r.standoutTracks.length) return '';
+  return `<div class="tracks-line">${r.standoutTracks.map((t) => `<span class="track-chip">${escapeHtml(t)}</span>`).join('')}</div>`;
+}
+
 function renderCard(r) {
   const id = 'text-' + (cardCounter++);
   const artHtml = r.art && r.art.url
@@ -674,6 +712,7 @@ function renderCard(r) {
         </div>
         <div class="evidence-line mono ${evidence}">${evidenceLabel(evidence)}</div>
         ${dateLine}
+        ${renderTracksLine(r)}
         <div class="headline-row">
           <div class="headline" id="${id}">${escapeHtml(snippet)}</div>
           ${truncated ? `<button class="toggle-reason" data-target="${id}" aria-expanded="false" aria-label="show more">+</button>` : ''}
@@ -741,6 +780,36 @@ function renderScoreMode(releases) {
     ${high.map(renderCard).join('')}
     ${renderRevealSection(low, revealId)}
   `;
+}
+
+function renderReleasedDateMode(releases) {
+  const byDate = {};
+  releases.forEach((r) => {
+    (byDate[r.releaseDate] = byDate[r.releaseDate] || []).push(r);
+  });
+  const dates = Object.keys(byDate).sort().reverse(); // newest already-out first
+
+  return dates.map((d) => {
+    const sorted = [...byDate[d]].sort((a, b) => b.score - a.score);
+    const high = sorted.filter((r) => r.score >= HIGH_THRESHOLD);
+    const low = sorted.filter((r) => r.score < HIGH_THRESHOLD);
+    const revealId = 'reveal-rel-' + d;
+    const hideControl = low.length
+      ? `<button class="hide-control mono" hidden>hide ${low.length}</button>`
+      : '';
+
+    return `
+      <div class="day-group">
+        <div class="datehead" data-reveal-id="${revealId}">
+          <span class="label mono">${shortDate(d)}</span>
+          ${hideControl}
+          <span class="rule"></span>
+        </div>
+        ${high.map(renderCard).join('')}
+        ${renderRevealSection(low, revealId)}
+      </div>
+    `;
+  }).join('');
 }
 
 function dayOfYear(d) {
@@ -812,8 +881,17 @@ function renderFeed() {
   cardCounter = 0;
   cardTextMap = {};
   const feed = document.getElementById('feed');
-  const visible = visibleReleases();
 
+  if (view === 'released') {
+    if (!allReleased.length) {
+      feed.innerHTML = '<p class="empty mono">Nothing in already-out yet. The pipeline catches these automatically as release dates pass.</p>';
+      return;
+    }
+    feed.innerHTML = mode === 'date' ? renderReleasedDateMode(allReleased) : renderScoreMode(allReleased);
+    return;
+  }
+
+  const visible = visibleReleases();
   if (!allUpcoming.length) {
     feed.innerHTML = '<p class="empty mono">Nothing scored yet for what\'s ahead. The pipeline runs hourly, check back soon.</p>';
     return;
@@ -823,6 +901,18 @@ function renderFeed() {
     return;
   }
   feed.innerHTML = mode === 'date' ? renderDateMode(visible) : renderScoreMode(visible);
+}
+
+function setView(next) {
+  if (view === next) return;
+  view = next;
+  document.getElementById('view-upcoming').classList.toggle('active', view === 'upcoming');
+  document.getElementById('view-released').classList.toggle('active', view === 'released');
+  document.getElementById('view-upcoming').setAttribute('aria-pressed', String(view === 'upcoming'));
+  document.getElementById('view-released').setAttribute('aria-pressed', String(view === 'released'));
+  document.getElementById('yearstrip').style.display = view === 'upcoming' ? '' : 'none';
+  document.getElementById('filter-recent').style.display = view === 'upcoming' ? '' : 'none';
+  renderFeed();
 }
 
 function setMode(next) {
@@ -875,6 +965,8 @@ function toggleRecentFilter() {
 document.getElementById('sort-date').addEventListener('click', () => setMode('date'));
 document.getElementById('sort-score').addEventListener('click', () => setMode('score'));
 document.getElementById('filter-recent').addEventListener('click', toggleRecentFilter);
+document.getElementById('view-upcoming').addEventListener('click', () => setView('upcoming'));
+document.getElementById('view-released').addEventListener('click', () => setView('released'));
 
 document.getElementById('feed').addEventListener('click', (e) => {
   const reasonBtn = e.target.closest('.toggle-reason');
@@ -914,8 +1006,9 @@ async function load() {
     if (data.error) throw new Error(data.error);
 
     const todayStr = new Date().toISOString().slice(0, 10);
-    const scored = (data.releases || []).filter((r) => typeof r.score === 'number' && r.releaseDate);
-    allUpcoming = scored.filter((r) => r.releaseDate >= todayStr);
+    const all = (data.releases || []).filter((r) => typeof r.score === 'number');
+    allReleased = all.filter((r) => r.category === 'already-released');
+    allUpcoming = all.filter((r) => r.category !== 'already-released' && r.releaseDate && r.releaseDate >= todayStr);
 
     renderYearStrip(allUpcoming);
     renderFeed();
@@ -925,6 +1018,7 @@ async function load() {
 }
 
 load();
+
 </script>
 </body>
 </html>
