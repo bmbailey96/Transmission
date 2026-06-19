@@ -8,3 +8,6 @@
 
 [functions."scheduled-discovery"]
   schedule = "@hourly"
+
+[functions."scheduled-already-released-move"]
+  schedule = "@hourly"
