@@ -11,3 +11,9 @@
 
 [functions."scheduled-already-released-move"]
   schedule = "@hourly"
+
+[functions."weekly-digest"]
+  # 14:30 UTC = 8:30am Mountain Daylight Time. Netlify's scheduler runs on
+  # fixed UTC, so this drifts to 7:30am local during Mountain Standard Time
+  # (winter). See README note on DST if you want this corrected twice a year.
+  schedule = "30 14 * * 1"
