@@ -1,4 +1,4 @@
-const { getStore } = require('@netlify/blobs');
+const { getStore, connectLambda } = require('@netlify/blobs');
 const masterList = require('../../data/scp-master-list.json');
 const { fetchScpContent } = require('../../lib/fetchScpContent');
 const { sendEmail } = require('../../lib/sendEmail'); // copy this in from your Transmission repo — same Resend wrapper, no changes needed.
@@ -61,7 +61,8 @@ function buildEmailHtml({ entry, content }) {
   </div>`;
 }
 
-exports.handler = async function () {
+exports.handler = async function (event) {
+  connectLambda(event);
   try {
     const store = getStore('scp-weekly-history');
     const entry = await pickNextEntry(store);
