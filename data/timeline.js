@@ -78,6 +78,12 @@ const TIMELINE = [
     realDate: '2004-09-27T13:18:00', subject: 'for Thursday', sender: 'Jennifer Condry' },
   { id: 'p2-postmaster', part: 2, partTitle: 'Correspondence from Mark Condry', type: 'bounce',
     realDate: '2004-10-01T13:30:00', subject: 'Undeliverable Mail', sender: 'Postmaster' },
+
+  // Eric's own framing introduction for the whole updates.htm page — found
+  // bundled inside the postmaster bounce content, where it doesn't
+  // belong. Given its own piece, positioned right before the updates begin.
+  { id: 'updates-intro', part: 1.4, partTitle: 'Updates', type: 'update-log',
+    realDate: '2004-10-13T00:00:00', subject: "Eric's Updates: October 14\u201328, 2004", sender: 'Eric Heisserer' },
   // Placed last in Part 2 deliberately, matching the casefile's own order —
   // presented as an older document surfacing after the main correspondence
   // ends, not by its true 1999 date.
@@ -93,31 +99,26 @@ const TIMELINE = [
     note: 'No documentation exists of what happened after October 31, 2004, or in its immediate aftermath. Eric Heisserer emerged from this period and had a career. The gap is unnarrated.' },
 
   // ---------- PART 3: Adventures in Babysitting (Danielle) ----------
-  // sortDate shifts the whole section 12 days later than its real dates —
-  // the Oct 22 update is what actually reveals this journal exists, so a
-  // contemporary reader wouldn't encounter these until after that, even
-  // though Danielle wrote them earlier. realDate (shown in each entry)
-  // stays the true, honest date — only the delivery timing moves.
   { id: 'p3-1011', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-11T22:21:00', sortDate: '2004-10-23T22:21:00', subject: 'New job!', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-11T22:21:00', subject: 'New job!', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1012', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-12T22:55:00', sortDate: '2004-10-24T22:55:00', subject: 'First night...', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-12T22:55:00', subject: 'First night...', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1013', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-13T22:34:00', sortDate: '2004-10-25T22:34:00', subject: 'Bizarre...', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-13T22:34:00', subject: 'Bizarre...', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1014', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-14T23:02:00', sortDate: '2004-10-26T23:02:00', subject: 'Crooked', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-14T23:02:00', subject: 'Crooked', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1016', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-16T11:10:00', sortDate: '2004-10-28T11:10:00', subject: 'Keys', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-16T11:10:00', subject: 'Keys', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1018', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-18T22:31:00', sortDate: '2004-10-30T22:31:00', subject: 'Back on the job', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-18T22:31:00', subject: 'Back on the job', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1019', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-19T22:48:00', sortDate: '2004-10-31T22:48:00', subject: 'why am I doing this again?', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-19T22:48:00', subject: 'why am I doing this again?', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1020', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-20T23:31:00', sortDate: '2004-11-01T23:31:00', subject: 'Home finally', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-20T23:31:00', subject: 'Home finally', sender: 'Danielle Stephens (ohdanigirl)' },
 
   // ---------- ABSENCE: the final five hours ----------
   { id: 'absence-danielle-final', part: 3.5, partTitle: 'Adventures in Babysitting', type: 'absence',
-    realDate: '2004-10-21T22:00:00', sortDate: '2004-11-02T22:00:00', subject: '(nothing arrives)',
+    realDate: '2004-10-21T22:00:00', subject: '(nothing arrives)',
     sender: null, absence: true,
     note: 'Danielle promised an account of the final five hours of babysitting. It was never written. The account has no entries after October 20, 2004.' },
 
@@ -178,10 +179,14 @@ const TIMELINE = [
   // way every other date in this file does.
   { id: 'p6-2014-original', part: 6, partTitle: 'After', type: 'epilogue-original',
     realDate: '2014-10-15T00:00:00', subject: 'Information I\u2019m dumping here for safekeeping', sender: null },
-  { id: 'p6-2014-update1', part: 6, partTitle: 'After', type: 'epilogue-original',
-    realDate: '2014-10-18T00:00:00', subject: 'Update', sender: null },
-  { id: 'p6-2014-update2', part: 6, partTitle: 'After', type: 'epilogue-original',
+  { id: 'p6-2014-update1a', part: 6, partTitle: 'After', type: 'epilogue-original',
+    realDate: '2014-10-18T00:00:00', subject: 'Update: some news', sender: null },
+  { id: 'p6-2014-update1b', part: 6, partTitle: 'After', type: 'epilogue-original',
+    realDate: '2014-10-19T00:00:00', subject: 'Update: translations', sender: null },
+  { id: 'p6-2014-update2a', part: 6, partTitle: 'After', type: 'epilogue-original',
     realDate: '2014-10-22T00:00:00', subject: 'Update: Back again', sender: null },
+  { id: 'p6-2014-update2b', part: 6, partTitle: 'After', type: 'epilogue-original',
+    realDate: '2014-10-23T00:00:00', subject: 'Final Update', sender: null },
 ];
 
 module.exports = { TIMELINE };
