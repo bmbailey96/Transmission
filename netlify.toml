@@ -19,3 +19,5 @@
   schedule = "30 14 * * 1"
 [functions."scp-weekly"]
   schedule = "30 14 * * 1"
+[functions."dionaea-daily-check"]
+  schedule = "*/15 * * * *"
