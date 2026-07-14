@@ -18,6 +18,22 @@ const TIMELINE = [
     realDate: '2004-10-07T00:00:00', subject: 'dionaea-house.com — the front page',
     sender: 'Eric Heisserer' },
 
+  // ---------- Updates page (Eric's own running log, separate from the main correspondence) ----------
+  { id: 'updates-1014', part: 1.5, partTitle: 'Updates', type: 'update-log',
+    realDate: '2004-10-14T00:00:00', subject: 'Site update — October 14, 2004', sender: 'Eric Heisserer' },
+  { id: 'updates-1017', part: 1.5, partTitle: 'Updates', type: 'update-log',
+    realDate: '2004-10-17T00:00:00', subject: 'Site update — October 17, 2004', sender: 'Eric Heisserer' },
+  { id: 'updates-1022', part: 1.5, partTitle: 'Updates', type: 'update-log',
+    realDate: '2004-10-22T00:00:00', subject: 'Site update — October 22, 2004', sender: 'Eric Heisserer' },
+  { id: 'updates-1026', part: 1.5, partTitle: 'Updates', type: 'update-log',
+    realDate: '2004-10-26T00:00:00', subject: 'Site update — October 26, 2004', sender: 'Eric Heisserer' },
+  { id: 'updates-1026late', part: 1.5, partTitle: 'Updates', type: 'update-log',
+    realDate: '2004-10-26T20:00:00', subject: 'Site update — October 26, 2004 (late)', sender: 'Eric Heisserer' },
+  { id: 'updates-1027', part: 1.5, partTitle: 'Updates', type: 'update-log',
+    realDate: '2004-10-27T00:00:00', subject: 'Site update — October 27, 2004', sender: 'Eric Heisserer' },
+  { id: 'updates-1028', part: 1.5, partTitle: 'Updates', type: 'update-log',
+    realDate: '2004-10-28T00:00:00', subject: 'Site update — October 28, 2004', sender: 'Eric Heisserer' },
+
   // ---------- PART 2: Correspondence from Mark Condry ----------
   { id: 'p2-0906', part: 2, partTitle: 'Correspondence from Mark Condry', type: 'email',
     realDate: '2004-09-06T08:17:00', subject: 'an old friend', sender: 'Mark Condry' },
@@ -66,7 +82,7 @@ const TIMELINE = [
   // presented as an older document surfacing after the main correspondence
   // ends, not by its true 1999 date.
   { id: 'p2-aimlog', part: 2, partTitle: 'Correspondence from Mark Condry', type: 'aimlog',
-    realDate: '2004-10-02T00:00:00', // narrative placement, not the log's real date
+    realDate: '2004-10-28T13:00:00', // true delivery date, per the Oct 28 updates.htm entry documenting Eric actually converting and posting it — not its 1999 in-story session date
     trueHistoricalDate: '1999-02-10T14:24:34',
     subject: 'aimlog.htm — recovered from Diane M.\u2019s father\u2019s PC', sender: 'lucygoosey / DianeMnz' },
 
@@ -77,26 +93,31 @@ const TIMELINE = [
     note: 'No documentation exists of what happened after October 31, 2004, or in its immediate aftermath. Eric Heisserer emerged from this period and had a career. The gap is unnarrated.' },
 
   // ---------- PART 3: Adventures in Babysitting (Danielle) ----------
+  // sortDate shifts the whole section 12 days later than its real dates —
+  // the Oct 22 update is what actually reveals this journal exists, so a
+  // contemporary reader wouldn't encounter these until after that, even
+  // though Danielle wrote them earlier. realDate (shown in each entry)
+  // stays the true, honest date — only the delivery timing moves.
   { id: 'p3-1011', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-11T22:21:00', subject: 'New job!', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-11T22:21:00', sortDate: '2004-10-23T22:21:00', subject: 'New job!', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1012', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-12T22:55:00', subject: 'First night...', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-12T22:55:00', sortDate: '2004-10-24T22:55:00', subject: 'First night...', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1013', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-13T22:34:00', subject: 'Bizarre...', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-13T22:34:00', sortDate: '2004-10-25T22:34:00', subject: 'Bizarre...', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1014', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-14T23:02:00', subject: 'Crooked', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-14T23:02:00', sortDate: '2004-10-26T23:02:00', subject: 'Crooked', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1016', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-16T11:10:00', subject: 'Keys', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-16T11:10:00', sortDate: '2004-10-28T11:10:00', subject: 'Keys', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1018', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-18T22:31:00', subject: 'Back on the job', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-18T22:31:00', sortDate: '2004-10-30T22:31:00', subject: 'Back on the job', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1019', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-19T22:48:00', subject: 'why am I doing this again?', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-19T22:48:00', sortDate: '2004-10-31T22:48:00', subject: 'why am I doing this again?', sender: 'Danielle Stephens (ohdanigirl)' },
   { id: 'p3-1020', part: 3, partTitle: 'Adventures in Babysitting', type: 'lj',
-    realDate: '2004-10-20T23:31:00', subject: 'Home finally', sender: 'Danielle Stephens (ohdanigirl)' },
+    realDate: '2004-10-20T23:31:00', sortDate: '2004-11-01T23:31:00', subject: 'Home finally', sender: 'Danielle Stephens (ohdanigirl)' },
 
   // ---------- ABSENCE: the final five hours ----------
   { id: 'absence-danielle-final', part: 3.5, partTitle: 'Adventures in Babysitting', type: 'absence',
-    realDate: '2004-10-21T22:00:00', subject: '(nothing arrives)',
+    realDate: '2004-10-21T22:00:00', sortDate: '2004-11-02T22:00:00', subject: '(nothing arrives)',
     sender: null, absence: true,
     note: 'Danielle promised an account of the final five hours of babysitting. It was never written. The account has no entries after October 20, 2004.' },
 
