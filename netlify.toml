@@ -18,7 +18,7 @@
   # (winter). See README note on DST if you want this corrected twice a year.
   schedule = "30 14 * * 1"
 [functions."scp-weekly"]
-  schedule = "30 14 * * 1"
+  schedule = "*/30 * * * *"
 [functions."dionaea-daily-check"]
   schedule = "*/15 * * * *"
   included_files = ["content/*.txt"]
