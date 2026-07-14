@@ -22,3 +22,7 @@
 [functions."dionaea-daily-check"]
   schedule = "*/15 * * * *"
   included_files = ["content/*.txt"]
+[functions."ongshat-check"]
+  # Checked every 30 min; the function itself decides whether it's actually
+  # due based on the stored next-send-at timestamp (see ongshat-check.js).
+  schedule = "*/30 * * * *"
