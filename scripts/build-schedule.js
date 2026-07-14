@@ -33,21 +33,21 @@ function calendarDaysBetween(a, b) {
 }
 
 function buildSchedule() {
-  const EPILOGUE_IDS = ['p6-2014-original', 'p6-2014-update1', 'p6-2014-update2'];
+  const EPILOGUE_IDS = ['p6-2014-original', 'p6-2014-update1a', 'p6-2014-update1b', 'p6-2014-update2a', 'p6-2014-update2b'];
   const mainArc = TIMELINE
     .filter((item) => !EPILOGUE_IDS.includes(item.id))
-    .sort((a, b) => parseDate(a.sortDate || a.realDate) - parseDate(b.sortDate || b.realDate));
+    .sort((a, b) => parseDate(a.realDate) - parseDate(b.realDate));
   const epilogueItems = TIMELINE
     .filter((item) => EPILOGUE_IDS.includes(item.id))
     .sort((a, b) => parseDate(a.realDate) - parseDate(b.realDate));
 
-  const firstDate = parseDate(mainArc[0].sortDate || mainArc[0].realDate);
-  const lastDate = parseDate(mainArc[mainArc.length - 1].sortDate || mainArc[mainArc.length - 1].realDate);
+  const firstDate = parseDate(mainArc[0].realDate);
+  const lastDate = parseDate(mainArc[mainArc.length - 1].realDate);
   const totalRealCalendarDays = calendarDaysBetween(firstDate, lastDate);
   const scale = MAIN_ARC_TARGET_DAYS / totalRealCalendarDays;
 
   const schedule = mainArc.map((item) => {
-    const schedulingDate = parseDate(item.sortDate || item.realDate);
+    const schedulingDate = parseDate(item.realDate);
     const realDayGap = calendarDaysBetween(firstDate, schedulingDate);
     const dayIndex = Math.round(realDayGap * scale);
     return {
@@ -62,7 +62,13 @@ function buildSchedule() {
 
   const lastMainDayIndex = schedule[schedule.length - 1].dayIndex;
 
-  const epilogueSpacingDays = { 'p6-2014-original': 0, 'p6-2014-update1': 4, 'p6-2014-update2': 8 };
+  const epilogueSpacingDays = {
+    'p6-2014-original': 0,
+    'p6-2014-update1a': 4,
+    'p6-2014-update1b': 6,
+    'p6-2014-update2a': 10,
+    'p6-2014-update2b': 12,
+  };
 
   for (const item of epilogueItems) {
     const extra = EPILOGUE_GAP_DAYS + (epilogueSpacingDays[item.id] ?? 0);

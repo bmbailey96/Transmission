@@ -161,6 +161,15 @@ lines.forEach((line, i) => {
   }
 }
 
+// --- Updates-page intro, extracted from where it was bundled inside the postmaster bounce ---
+{
+  const idx = raw.indexOf("Eric\u2019s Updates: October 14");
+  if (idx !== -1) {
+    const lineStart = raw.lastIndexOf('\n', idx) + 1;
+    anchors.push({ offset: lineStart, matchedId: 'updates-intro', note: null });
+  }
+}
+
 // --- Updates page anchors: plain "10.14.2004" style date lines ---
 {
   const UPDATE_DATE_RE = /^(\d{1,2})\.(\d{1,2})\.(\d{4})\s*(\(late\))?/;
@@ -243,7 +252,21 @@ lines.forEach((line, i) => {
   }
 }
 
-// --- Part 6 (2014 post + 2 updates) anchors ---
+// --- Section-header boundary lines: these leaked onto the END of the
+// preceding file (e.g. "ohdanigirl.livejournal.com" showing up after the
+// AIM log) because nothing marked where the NEXT section actually starts.
+// Adding them as discarded (unmatched) anchors fixes this — the preceding
+// chunk now correctly ends right here instead of swallowing this line.
+for (const marker of ['ohdanigirl.livejournal.com', 'dionaeahouse.blogspot.com | A Quiet Space', 'The Blog of Loreen Mathers']) {
+  const idx = raw.indexOf(marker);
+  if (idx !== -1) {
+    const lineStart = raw.lastIndexOf('\n', idx) + 1;
+    anchors.push({ offset: lineStart, matchedId: null, note: `boundary marker (discarded): ${marker}` });
+  }
+}
+
+// --- Part 6 (2014 post + 2 updates, each of which turned out to be TWO
+// bundled edits once actually read — 5 real pieces total) anchors ---
 {
   const idx = raw.indexOf('nosleep');
   if (idx !== -1) {
@@ -257,13 +280,28 @@ lines.forEach((line, i) => {
   // earlier in the file (in the separate updates.htm material) and a plain
   // text search would grab the wrong occurrence.
   const targetLines = [1801, 1903]; // 1-indexed, matches raw.split('\n') at index-1
-  const ids = ['p6-2014-update1', 'p6-2014-update2'];
+  const ids = ['p6-2014-update1a', 'p6-2014-update2a'];
   targetLines.forEach((lineNum, i) => {
     const offset = lineOffsets[lineNum - 1];
     if (offset !== undefined) {
       anchors.push({ offset, matchedId: ids[i], note: null });
     }
   });
+}
+{
+  // The two embedded sub-updates, found only by actually reading the
+  // content — each of the two "UPDATE:" pieces above turned out to
+  // themselves contain a second, later edit bundled in.
+  const idx1 = raw.indexOf('[UPDATE: translations]');
+  if (idx1 !== -1) {
+    const lineStart = raw.lastIndexOf('\n', idx1) + 1;
+    anchors.push({ offset: lineStart, matchedId: 'p6-2014-update1b', note: null });
+  }
+  const idx2 = raw.indexOf('[Final Update]');
+  if (idx2 !== -1) {
+    const lineStart = raw.lastIndexOf('\n', idx2) + 1;
+    anchors.push({ offset: lineStart, matchedId: 'p6-2014-update2b', note: null });
+  }
 }
 
 anchors.sort((a, b) => a.offset - b.offset);
