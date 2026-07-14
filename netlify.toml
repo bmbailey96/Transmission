@@ -21,3 +21,4 @@
   schedule = "30 14 * * 1"
 [functions."dionaea-daily-check"]
   schedule = "*/15 * * * *"
+  included_files = ["content/*.txt"]
