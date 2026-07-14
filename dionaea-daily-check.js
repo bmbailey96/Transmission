@@ -44,10 +44,40 @@ function textToParagraphs(text) {
     .join('');
 }
 
+// Shown at the very top of every single email, same spot, every time —
+// answers "what kind of thing is this" before you even read the sender.
+const TYPE_LABELS = {
+  'email': 'EMAIL',
+  'sms-single': 'TEXT MESSAGE',
+  'sms-burst': 'TEXT MESSAGES',
+  'comment': 'BLOG COMMENT',
+  'lj': 'LIVEJOURNAL ENTRY',
+  'blog': 'BLOG POST',
+  'aimlog': 'RECOVERED CHAT LOG',
+  'bounce': 'UNDELIVERABLE MAIL NOTICE',
+  'update-log': 'SITE UPDATE',
+  'site-frontpage': 'WEBSITE',
+  'epilogue-original': 'FORUM POST',
+};
+
 function wrapShell({ innerHtml, item }) {
+  const typeLabel = TYPE_LABELS[item.type] || '';
+  const senderLine = item.sender ? escapeHtml(item.sender) : '';
   return `
   <div style="background:${COLORS.bg};padding:28px 12px;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;font-family:${FONT_UI};">
+      <tr>
+        <td style="padding-bottom:6px;">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="background:#222;border:1px solid #444;border-radius:3px;padding:3px 8px;">
+                <span style="font-family:${FONT_MONO};font-size:11px;letter-spacing:0.08em;color:#9dd6c4;">${typeLabel}</span>
+              </td>
+              ${senderLine ? `<td style="padding-left:8px;"><span style="font-family:${FONT_UI};font-size:12px;color:#999;">${senderLine}</span></td>` : ''}
+            </tr>
+          </table>
+        </td>
+      </tr>
       <tr>
         <td style="padding-bottom:16px;">
           <p style="margin:0;font-size:11px;letter-spacing:0.12em;color:#666;text-transform:uppercase;">Dionaea House &mdash; Part ${item.partTitle ? '' : ''}${item.partTitle || ''}</p>
@@ -143,8 +173,13 @@ function buildEmailHtml({ item, content, absenceNote }) {
     case 'aimlog': {
       inner = `
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#000;border:1px solid #333;">
-          <tr><td style="padding:18px 20px;font-family:${FONT_MONO};font-size:13px;color:#c0c0c0;line-height:1.8;">
-            ${bodyHtml}
+          <tr><td style="padding:18px 20px;">
+            <p style="font-family:${FONT_UI};font-size:12px;color:#888;margin:0 0 14px;border-bottom:1px solid #333;padding-bottom:10px;">
+              Recovered from Diane M.'s father's PC. Converted to HTML by Eric Heisserer, screen name numbers removed. Original session: February 10, 1999.
+            </p>
+            <div style="font-family:${FONT_MONO};font-size:13px;color:#c0c0c0;line-height:1.8;">
+              ${bodyHtml}
+            </div>
           </td></tr>
         </table>`;
       break;
