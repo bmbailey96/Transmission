@@ -66,13 +66,18 @@ const anchors = []; // { offset, matchedId, note }
 lines.forEach((line, i) => {
   const dateMatch = line.match(/^date:\s*(.+)$/i);
   if (!dateMatch) return;
-  // require a "from:" line within the previous 3 lines
-  const hasFrom = lines.slice(Math.max(0, i - 3), i).some((l) => /^from:/i.test(l));
-  if (!hasFrom) return;
+  // Find the ACTUAL line with "from:" within the previous few lines —
+  // don't assume it's always exactly N lines back. Overshooting here is
+  // what caused the previous piece's trailing text (e.g. a signature
+  // line) to leak onto the front of this one.
+  const searchWindow = lines.slice(Math.max(0, i - 3), i);
+  const fromOffsetInWindow = searchWindow.findIndex((l) => /^from:/i.test(l));
+  if (fromOffsetInWindow === -1) return; // no "from:" line nearby — not an email anchor
+  const fromLineIndex = Math.max(0, i - 3) + fromOffsetInWindow;
 
   const parsed = parseHeaderDate(dateMatch[1]);
   if (!parsed) {
-    anchors.push({ offset: lineOffsets[Math.max(0, i - 3)], matchedId: null, note: `unparseable date near line ${i + 1}` });
+    anchors.push({ offset: lineOffsets[fromLineIndex], matchedId: null, note: `unparseable date near line ${i + 1}` });
     return;
   }
 
@@ -88,10 +93,9 @@ lines.forEach((line, i) => {
       best = item;
     }
   }
-  const startLine = Math.max(0, i - 3); // back up to include the "from:" line
   const withinTolerance = bestDiff < 1000 * 60 * 5; // 5-minute tolerance
   anchors.push({
-    offset: lineOffsets[startLine],
+    offset: lineOffsets[fromLineIndex],
     matchedId: withinTolerance ? best.id : null,
     note: withinTolerance ? null : `closest match ${best ? best.id : 'none'} off by ${(bestDiff / 60000).toFixed(1)} min — not auto-assigned`,
   });
@@ -102,24 +106,51 @@ lines.forEach((line, i) => {
 // start of the file — otherwise an earlier mention of the same title
 // elsewhere (e.g. a comment that quotes "Early Start" by name before the
 // real entry appears) gets matched instead of the actual entry.
-const ljSectionStart = (() => {
-  const idx = raw.indexOf('ohdanigirl.livejournal.com');
-  return idx === -1 ? 0 : idx;
-})();
-const blogSectionStart = (() => {
-  const idx = raw.indexOf('dionaeahouse.blogspot.com');
-  return idx === -1 ? 0 : idx;
-})();
-
-for (const item of schedule) {
-  if (item.type !== 'lj' && item.type !== 'blog') continue;
-  if (!item.subject) continue;
-  const searchFrom = item.type === 'lj' ? ljSectionStart : blogSectionStart;
-  const idx = raw.indexOf(item.subject, searchFrom);
-  if (idx === -1) continue;
-  const lineStart = raw.lastIndexOf('\n', idx) + 1;
-  anchors.push({ offset: lineStart, matchedId: item.id, note: null });
+// Handles both real date-header formats found in the file:
+//   "Wednesday, October 20th, 2004 | 11:31 pm"  (Danielle/Eric — has weekday, full month)
+//   "Aug. 16th, 2005 | 12:40 pm"                (Loreen — no weekday, abbreviated month)
+const MONTH_ABBREVS = {
+  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+};
+function parseLjHeaderDate(str) {
+  const m = str.match(/^(?:\w+day,\s+)?(\w+)\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})\s*\|\s*(\d{1,2}):(\d{2})\s*(am|pm)/i);
+  if (!m) return null;
+  const [, monthStr, day, year, hourStr, min, ampm] = m;
+  const month = MONTH_ABBREVS[monthStr.slice(0, 3).toLowerCase()];
+  if (month === undefined) return null;
+  let hour = parseInt(hourStr, 10) % 12;
+  if (ampm.toLowerCase() === 'pm') hour += 12;
+  return new Date(parseInt(year, 10), month, parseInt(day, 10), hour, parseInt(min, 10));
 }
+
+const LJ_HEADER_RE = /^(\w+day,\s+)?\w+\.?\s+\d{1,2}(st|nd|rd|th)?,?\s+\d{4}\s*\|\s*\d{1,2}:\d{2}\s*(am|pm)/i;
+
+lines.forEach((line, i) => {
+  const trimmed = line.trim();
+  if (!LJ_HEADER_RE.test(trimmed)) return;
+  const parsed = parseLjHeaderDate(trimmed);
+  if (!parsed) {
+    anchors.push({ offset: lineOffsets[i], matchedId: null, note: `unparseable lj/blog date at line ${i + 1}: ${trimmed}` });
+    return;
+  }
+  let best = null;
+  let bestDiff = Infinity;
+  for (const item of schedule) {
+    if (item.type !== 'lj' && item.type !== 'blog') continue;
+    const diff = Math.abs(new Date(item.realDate).getTime() - parsed.getTime());
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = item;
+    }
+  }
+  const withinTolerance = bestDiff < 1000 * 60 * 60; // 1-hour tolerance (some LJ timestamps round differently)
+  anchors.push({
+    offset: lineOffsets[i],
+    matchedId: withinTolerance ? best.id : null,
+    note: withinTolerance ? null : `closest lj/blog match ${best ? best.id : 'none'} off by ${(bestDiff / 60000).toFixed(1)} min — not auto-assigned`,
+  });
+});
 
 // --- Site frontpage anchor ---
 {
@@ -128,6 +159,44 @@ for (const item of schedule) {
     const lineStart = raw.lastIndexOf('\n', idx) + 1;
     anchors.push({ offset: lineStart, matchedId: 'p1-site', note: null });
   }
+}
+
+// --- Updates page anchors: plain "10.14.2004" style date lines ---
+{
+  const UPDATE_DATE_RE = /^(\d{1,2})\.(\d{1,2})\.(\d{4})\s*(\(late\))?/;
+  lines.forEach((line, i) => {
+    const trimmed = line.trim();
+    const m = trimmed.match(UPDATE_DATE_RE);
+    if (!m) return;
+    if (trimmed === '10.7.2004') return; // already claimed by the frontpage anchor above
+    const [, month, day, year, lateFlag] = m;
+    const parsedDate = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10));
+
+    let best = null;
+    let bestDiff = Infinity;
+    for (const item of schedule) {
+      if (item.type !== 'update-log') continue;
+      const itemDate = new Date(item.realDate);
+      // Compare calendar day + late-flag rather than exact time, since
+      // update-log items don't carry a real time-of-day beyond a nominal
+      // placeholder for the "(late)" one.
+      const sameDay =
+        itemDate.getFullYear() === parsedDate.getFullYear() &&
+        itemDate.getMonth() === parsedDate.getMonth() &&
+        itemDate.getDate() === parsedDate.getDate();
+      const itemIsLate = item.id.includes('late');
+      if (sameDay && Boolean(lateFlag) === itemIsLate) {
+        best = item;
+        bestDiff = 0;
+        break;
+      }
+    }
+    anchors.push({
+      offset: lineOffsets[i],
+      matchedId: best ? best.id : null,
+      note: best ? null : `no update-log schedule item matched for date line: ${trimmed}`,
+    });
+  });
 }
 
 // --- SMS-type anchors: "from: [removed]@messaging.sprintpcs.com | date: ..." ---

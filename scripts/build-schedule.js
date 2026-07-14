@@ -17,7 +17,7 @@
 
 const { TIMELINE } = require('../data/timeline');
 
-const MAIN_ARC_TARGET_DAYS = 90; // ~3 months. Change this and re-run to retime everything.
+const MAIN_ARC_TARGET_DAYS = 150; // ~5 months. Chosen so the dense Oct 2004 cluster (Danielle/Eric/updates/AIM log, ~26 pieces in 20 real days) spreads across a couple of weeks instead of piling onto 2-3 days, while the ~289-day real silence stays proportionally dominant either way.
 const EPILOGUE_GAP_DAYS = 14; // deliberate pause after the main arc ends, before the 2014 material
 const EPILOGUE_HOUR = 9; // arbitrary -- the 2014 posts don't carry meaningful real-world times
 
@@ -36,25 +36,25 @@ function buildSchedule() {
   const EPILOGUE_IDS = ['p6-2014-original', 'p6-2014-update1', 'p6-2014-update2'];
   const mainArc = TIMELINE
     .filter((item) => !EPILOGUE_IDS.includes(item.id))
-    .sort((a, b) => parseDate(a.realDate) - parseDate(b.realDate));
+    .sort((a, b) => parseDate(a.sortDate || a.realDate) - parseDate(b.sortDate || b.realDate));
   const epilogueItems = TIMELINE
     .filter((item) => EPILOGUE_IDS.includes(item.id))
     .sort((a, b) => parseDate(a.realDate) - parseDate(b.realDate));
 
-  const firstDate = parseDate(mainArc[0].realDate);
-  const lastDate = parseDate(mainArc[mainArc.length - 1].realDate);
+  const firstDate = parseDate(mainArc[0].sortDate || mainArc[0].realDate);
+  const lastDate = parseDate(mainArc[mainArc.length - 1].sortDate || mainArc[mainArc.length - 1].realDate);
   const totalRealCalendarDays = calendarDaysBetween(firstDate, lastDate);
   const scale = MAIN_ARC_TARGET_DAYS / totalRealCalendarDays;
 
   const schedule = mainArc.map((item) => {
-    const itemDate = parseDate(item.realDate);
-    const realDayGap = calendarDaysBetween(firstDate, itemDate);
+    const schedulingDate = parseDate(item.sortDate || item.realDate);
+    const realDayGap = calendarDaysBetween(firstDate, schedulingDate);
     const dayIndex = Math.round(realDayGap * scale);
     return {
       ...item,
       dayIndex,
-      hour: itemDate.getHours(),
-      minute: itemDate.getMinutes(),
+      hour: schedulingDate.getHours(),
+      minute: schedulingDate.getMinutes(),
       contentFile: item.absence ? null : `content/${item.id}.txt`,
       sent: false,
     };
