@@ -1,5 +1,3 @@
-- Eric
-
 from: “Condry, Mark”
 date: Monday, September 06, 2004 8:17 AM
 subject: an old friend
@@ -24,3 +22,5 @@ if I can track down Travis and Dave. A quick search didn’t
 seem to turn up any leads, but maybe they just don’t have
 websites. If you still talk to either of them, let me know.
 Thanks,
+Mark
+
