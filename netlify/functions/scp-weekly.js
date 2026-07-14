@@ -1,9 +1,60 @@
 const { getStore, connectLambda } = require('@netlify/blobs');
 const masterList = require('../../data/scp-master-list.json');
+const sendOrder = require('../../data/scp-send-order.json');
 const { fetchScpContent } = require('../../lib/fetchScpContent');
-const { sendEmail } = require('../../lib/sendEmail'); // copy this in from your Transmission repo — same Resend wrapper, no changes needed.
+const { sendEmail } = require('../../lib/sendEmail');
 
 const SENT_KEY = 'sent-urls';
+const NEXT_SEND_KEY = 'next-send-at';
+
+const { denverWallTimeToUTC } = require('../../lib/denverTime');
+
+// Sporadic gap between sends: 1-8 days (average ~4.5), not tied to a
+// fixed weekly schedule.
+const MIN_GAP_DAYS = 1;
+const MAX_GAP_DAYS = 8;
+
+/**
+ * Picks a random Montana-local send time: never between 11:00 PM and
+ * 8:00 AM (no sends overnight), weighted toward evening (6 PM-11 PM)
+ * the rest of the time, occasionally landing earlier in the day.
+ * Converted to the correct UTC instant via the DST-aware helper, since
+ * this schedule can run for years and will cross many DST transitions.
+ */
+function randomNextSendTime(from) {
+  const gapDays = MIN_GAP_DAYS + Math.random() * (MAX_GAP_DAYS - MIN_GAP_DAYS);
+  let target = new Date(from.getTime() + gapDays * 24 * 60 * 60 * 1000);
+
+  // Allowed window: 8:00 AM - 11:00 PM Montana time (15 hours). Within
+  // that, 70% chance of landing in the evening slice (6 PM-11 PM), 30%
+  // chance anywhere in the daytime slice (8 AM-6 PM).
+  let hour, minute;
+  if (Math.random() < 0.7) {
+    hour = 18 + Math.floor(Math.random() * 5); // 18-22 (6pm-10:59pm)
+  } else {
+    hour = 8 + Math.floor(Math.random() * 10); // 8-17 (8am-5:59pm)
+  }
+  minute = Math.floor(Math.random() * 60);
+
+  const targetUTC = denverWallTimeToUTC(
+    target.getUTCFullYear(),
+    target.getUTCMonth() + 1,
+    target.getUTCDate(),
+    hour,
+    minute
+  );
+
+  // If picking the hour pushed it before "from" (can happen when gapDays
+  // rounds down near a day boundary), push forward one more day.
+  if (targetUTC <= from) {
+    const nextDay = new Date(targetUTC);
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+    return denverWallTimeToUTC(nextDay.getUTCFullYear(), nextDay.getUTCMonth() + 1, nextDay.getUTCDate(), hour, minute);
+  }
+  return targetUTC;
+}
+
+const byUrl = Object.fromEntries(masterList.map((e) => [e.url, e]));
 
 async function pickNextEntry(store) {
   let sent = [];
@@ -11,28 +62,25 @@ async function pickNextEntry(store) {
     const raw = await store.get(SENT_KEY, { type: 'json' });
     if (Array.isArray(raw)) sent = raw;
   } catch (err) {
-    // no history yet — first run
+    // no history yet -- first run
   }
 
   const sentSet = new Set(sent);
-  let pool = masterList.filter((e) => !sentSet.has(e.url));
+  let pool = sendOrder.filter((url) => !sentSet.has(url));
 
-  // Once every entry in the pool has been sent, start over rather than
-  // stopping — a 596-entry pool means this won't happen for over 11 years
-  // at one a week, but the reset is here so it never just goes silent.
+  // Once the whole order has been sent, start over rather than going
+  // silent -- at roughly one every 7 days, this won't happen for over
+  // 11 years.
   if (pool.length === 0) {
     sent = [];
-    pool = masterList;
+    pool = sendOrder;
   }
 
-  const chosen = pool[Math.floor(Math.random() * pool.length)];
-  await store.set(SENT_KEY, JSON.stringify([...sent, chosen.url]));
-  return chosen;
+  const chosenUrl = pool[0]; // first unsent entry in the fixed, pre-mixed order
+  await store.set(SENT_KEY, JSON.stringify([...sent, chosenUrl]));
+  return byUrl[chosenUrl];
 }
 
-// Matches the actual SCP Wiki's own look: white background, black body
-// text, the wiki's red/maroon heading color, a thin divider under the
-// title — rather than reskinning it into anything of our own invention.
 function buildEmailHtml({ entry, content }) {
   return `
   <div style="background:#ffffff;padding:24px 12px;">
@@ -65,6 +113,20 @@ exports.handler = async function (event) {
   connectLambda(event);
   try {
     const store = getStore('scp-weekly-history');
+
+    const now = new Date();
+    let nextSendAt = null;
+    try {
+      const raw = await store.get(NEXT_SEND_KEY, { type: 'text' });
+      if (raw) nextSendAt = new Date(raw);
+    } catch (err) {
+      // no schedule set yet -- first run, treat as due immediately
+    }
+
+    if (nextSendAt && now < nextSendAt) {
+      return { statusCode: 200, body: `Not due yet. Next send: ${nextSendAt.toISOString()}` };
+    }
+
     const entry = await pickNextEntry(store);
     const content = await fetchScpContent(entry.url);
 
@@ -73,9 +135,13 @@ exports.handler = async function (event) {
 
     await sendEmail({ to: process.env.SCP_TO_EMAIL || process.env.DIGEST_TO_EMAIL, subject, html });
 
-    return { statusCode: 200, body: `Sent: ${entry.title} (${entry.url})` };
+    // Schedule the next one: 1-8 days out, at a genuinely random hour.
+    const next = randomNextSendTime(now);
+    await store.set(NEXT_SEND_KEY, next.toISOString());
+
+    return { statusCode: 200, body: `Sent: ${entry.title} (${entry.url}). Next send scheduled for ${next.toISOString()}.` };
   } catch (err) {
-    console.error('SCP weekly digest failed:', err.message);
+    console.error('SCP digest failed:', err.message);
     return { statusCode: 500, body: err.message };
   }
 };
