@@ -1,5 +1,3 @@
-- Mark
-
 from: “Condry, Mark”
 date: Thursday, September 09, 2004 2:00 PM
 subject: Andrew
@@ -42,3 +40,4 @@ I’m listed in the book. That would explain the logistics
 part.
 I’m overthinking things.
 Take care,
+Mark
