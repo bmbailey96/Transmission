@@ -17,12 +17,4 @@
   # fixed UTC, so this drifts to 7:30am local during Mountain Standard Time
   # (winter). See README note on DST if you want this corrected twice a year.
   schedule = "30 14 * * 1"
-[functions."scp-weekly"]
-  schedule = "*/30 * * * *"
-[functions."dionaea-daily-check"]
-  schedule = "*/15 * * * *"
-  included_files = ["content/*.txt"]
-[functions."ongshat-check"]
-  # Checked every 30 min; the function itself decides whether it's actually
-  # due based on the stored next-send-at timestamp (see ongshat-check.js).
-  schedule = "*/30 * * * *"
+
