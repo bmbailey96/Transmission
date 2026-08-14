@@ -26,7 +26,7 @@ const artists = [
   'Magdalena Bay', 'Maggie Rogers', 'Mali Velasquez', 'Marissa Nadler', 'Mazzy Star',
   'Michael Kiwanuka', 'Mitski', 'Model/Actriz', 'Mogwai', 'Mount Eerie', 'Mt. Joy',
   'My New Band Believe', 'Nation of Language', 'Nilufer Yanya', 'Noah Kahan',
-  'Oliver Hazard', 'Oso Oso', 'Parquet Courts', 'Peach Pit', 'Pile', 'Pinegrove',
+  'Oliver Hazard', 'Oso Oso', 'Parquet Courts', 'Peach Pit', 'Phoebe Bridgers', 'Pile', 'Pinegrove',
   'Rachel Chinouriri', 'Racing Mount Pleasant', 'Remi Wolf', 'Rosie Tucker',
   'S. Carey & John Raymond', 'Samia', 'Saya Gray', 'Sharon Van Etten',
   'Sharon Van Etten & The Attachment Theory', 'Sharp Pins', 'Skullcrusher', 'Slowdive',
