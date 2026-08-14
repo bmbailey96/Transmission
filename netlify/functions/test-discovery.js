@@ -47,7 +47,7 @@ exports.handler = async function (event) {
   const { allItems, feedErrors, counts } = await fetchAllFeedItems();
   const { cards, alreadyKnown, skipped } = await runDiscoveryPass(allItems);
 
-  let wikiResult = { cards: [], alreadyKnown: [], stillQueued: 0, totalConsidered: 0, watchlistCount: 0 };
+  let wikiResult = { cards: [], alreadyKnown: [], backfilled: [], stillQueued: 0, totalConsidered: 0, watchlistCount: 0 };
   let wikiError = null;
   try {
     const wikiEntries = await fetchUpcomingAlbums();
@@ -91,6 +91,13 @@ ${
   alreadyKnown.length || wikiResult.alreadyKnown.length
     ? [...alreadyKnown, ...wikiResult.alreadyKnown].map((t) => `<div class="skip">already scored earlier: ${t}</div>`).join('\n')
     : '<p>Nothing in this batch was already known.</p>'
+}
+<h2>Backfilled from Wikipedia (${(wikiResult.backfilled || []).length})</h2>
+<p style="color:#666;font-size:.85em;">Records that already existed (usually from a bare RSS announcement post, no date given at the time) but had no releaseDate, so they were invisible on the site regardless of score. Wikipedia has a confirmed date for these now, filled in without a rescore.</p>
+${
+  (wikiResult.backfilled || []).length
+    ? wikiResult.backfilled.map((t) => `<div class="skip">${t}</div>`).join('\n')
+    : '<p>Nothing needed backfilling this run.</p>'
 }
 <h2>Wikipedia album list: found and scored just now (${wikiResult.cards.length})</h2>
 ${!wikiError && wikiResult.cards.length ? `<p style="color:#666;font-size:.85em;">${wikiResult.watchlistCount} from already-loved artists/labels jumping the queue, ${wikiResult.cards.length - wikiResult.watchlistCount} from the regular throttled batch.</p>` : ''}
