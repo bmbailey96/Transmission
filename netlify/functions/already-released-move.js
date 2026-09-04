@@ -41,7 +41,8 @@ a{color:#9fd}
 </style></head><body>
 <h1>Already-released move</h1>
 <p><a href="/">&larr; back</a></p>
-<p>${output.totalCandidates} releases have a release date in the past and haven't been moved yet. Processed ${output.processed} this run.</p>
+${output.fatalError ? `<p class="err">Could not even load the release list: ${output.fatalError}</p>` : ''}
+<p>${output.totalCandidates} releases have a release date in the past and haven't been moved yet. Processed ${output.processed} this run (${output.succeeded ?? output.processed} succeeded).</p>
 <p>${output.stillQueued} still left, revisit this page to keep going.</p>
 ${output.results.length ? output.results.map(row).join('\n') : '<p>Nothing to do.</p>'}
 </body></html>`;

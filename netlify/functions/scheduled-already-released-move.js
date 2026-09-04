@@ -6,8 +6,11 @@ exports.handler = async function (event) {
 
   try {
     const result = await runAlreadyReleasedMove();
+    if (result.fatalError) {
+      console.error(`Scheduled already-released move: could not load releases at all: ${result.fatalError}`);
+    }
     console.log(
-      `Scheduled already-released move: processed ${result.processed}, ${result.stillQueued} still queued.`
+      `Scheduled already-released move: processed ${result.processed} (${result.succeeded ?? result.processed} succeeded), ${result.stillQueued} still queued.`
     );
     result.results.forEach((r) => {
       if (r.error) {

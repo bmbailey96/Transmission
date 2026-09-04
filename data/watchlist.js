@@ -38,6 +38,25 @@ const artists = [
   'Yebba', 'boygenius', 'underscores',
   // added directly from pre-saved Spotify screenshots, not yet in any ranked year
   'Julia Jacklin', 'Slow Pulp', 'Man/Woman/Chainsaw', 'Swampmeet', 'mary in the junkyard',
+
+  // Synced from data/albumHistory.js's "Recent listening, last 6 months"
+  // section, Sept 2026. That section existed as real, current listening
+  // but was never actually cross-checked against this list: 60 of its 64
+  // entries (49 distinct artists) weren't here, so none of them got the
+  // "skip the throttle, score immediately" treatment the comments above
+  // describe, despite being artists this person was actively listening to
+  // right now. Re-run this comparison periodically, it will drift again.
+  'Asher White', 'Avalon Emerson', 'Basement', 'Brian Eno', 'Broken Social Scene',
+  'Bryce Dessner', 'Built To Spill', 'Candelabra', 'Clap Your Hands Say Yeah',
+  'Courtney Barnett', 'Current Joys', 'Do Make Say Think', 'Dove Ellis',
+  'Dutch Interior', 'Explosions in the Sky', 'Fishmans', 'Jesse Welles',
+  'Madison Cunningham', 'Maria BC', 'Mouseatouille', 'My Chemical Romance',
+  'Natural Snow Buildings', 'Neu Blume', 'Nick Drake', 'Ovlov', 'Oxis',
+  'Patterson Hood', 'Peter Bjorn and John', 'Phil Collins', 'Quadeca', 'Ratboys',
+  'Robber Robber', 'S.G. Goodman', 'Shallowater', 'Small Forward',
+  'Stars Of The Lid', 'The Hotelier', 'Trees', 'Viagra Boys', 'Victoryland',
+  'Yndi Halda', 'Yo La Tengo', 'Yumi Zouma', 'cootie catcher', 'james K',
+  'k.d. lang', 'sunn O)))', 'toe', 'villagerrr',
 ];
 
 // No labels seeded yet. Add specific labels here if there are ones you want
