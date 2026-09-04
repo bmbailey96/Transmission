@@ -3,7 +3,12 @@ const { getAllReleases, upsertRelease } = require('../../lib/storage/releaseStor
 const { addAlbumToPlaylist } = require('../../lib/spotify/spotifyPlaylist');
 
 const SCORE_THRESHOLD_FOR_PLAYLIST = 50; // same bar the mover uses
-const MAX_PER_RUN = 15; // no LLM scoring call here, just a Spotify search + track fetch + dedup-checked add per album, lighter than the search-backed scoring jobs
+const MAX_PER_RUN = 8; // was 15: a real run at that size tripped Spotify's 429 QUOTA_EXCEEDED after burning through token refreshes with zero delay between albums, see spotifyPlaylist.js's token cache and DELAY_BETWEEN_ALBUMS_MS below
+const DELAY_BETWEEN_ALBUMS_MS = 600; // give Spotify's rate limiter room between albums instead of firing search/tracks/playlist calls back to back
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 /**
  * One-time cleanup, not part of the regular pipeline. Found live, Sept
@@ -51,6 +56,8 @@ exports.handler = async function (event) {
 
   const results = [];
   for (const release of toProcess) {
+    if (results.length > 0) await sleep(DELAY_BETWEEN_ALBUMS_MS);
+
     let spotify;
     try {
       const spotifyResult = await addAlbumToPlaylist({
