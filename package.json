@@ -5,7 +5,8 @@
   "description": "Personal release radar. Surfaces upcoming albums worth knowing about, scored against one taste profile, with quietly self-correcting date verification and a real cover art fallback chain.",
   "scripts": {
     "test:scoring": "node test/runScoring.js",
-    "test:art": "node test/runArtFetch.js"
+    "test:art": "node test/runArtFetch.js",
+    "test": "node test/v2Logic.js"
   },
   "dependencies": {
     "@netlify/blobs": "^10.7.9",

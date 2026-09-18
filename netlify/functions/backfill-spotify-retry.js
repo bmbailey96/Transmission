@@ -3,8 +3,8 @@ const { getAllReleases, upsertRelease } = require('../../lib/storage/releaseStor
 const { addAlbumToPlaylist } = require('../../lib/spotify/spotifyPlaylist');
 
 const SCORE_THRESHOLD_FOR_PLAYLIST = 50; // same bar the mover uses
-const MAX_PER_RUN = 8; // was 15: a real run at that size tripped Spotify's 429 QUOTA_EXCEEDED after burning through token refreshes with zero delay between albums, see spotifyPlaylist.js's token cache and DELAY_BETWEEN_ALBUMS_MS below
-const DELAY_BETWEEN_ALBUMS_MS = 600; // give Spotify's rate limiter room between albums instead of firing search/tracks/playlist calls back to back
+const MAX_PER_RUN = 4; // was 15: a real run at that size tripped Spotify's 429 QUOTA_EXCEEDED after burning through token refreshes with zero delay between albums, see spotifyPlaylist.js's token cache and DELAY_BETWEEN_ALBUMS_MS below
+const DELAY_BETWEEN_ALBUMS_MS = 900; // give Spotify's rate limiter room between albums instead of firing search/tracks/playlist calls back to back
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -71,7 +71,13 @@ exports.handler = async function (event) {
     }
 
     try {
-      await upsertRelease({ artist: release.artist, albumTitle: release.albumTitle, spotifyStatus: spotify });
+      await upsertRelease({
+        artist: release.artist,
+        albumTitle: release.albumTitle,
+        spotifyStatus: spotify,
+        spotifyRetryCount: spotify.error ? (release.spotifyRetryCount || 0) + 1 : 0,
+        spotifyLastAttemptAt: new Date().toISOString(),
+      });
     } catch (err) {
       // best effort, don't let a failed status-save take down the run
     }
