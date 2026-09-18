@@ -1,0 +1,36 @@
+name: Inspect V2 Spotify queue
+
+on:
+  push:
+    branches:
+      - "ops/spotify-backlog-2026-09-18"
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect V2 released signals
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS https://transmissionalbum.netlify.app/.netlify/functions/v2-feed > /tmp/feed.json
+          jq -r '
+            "V2 RELEASED 60+:",
+            (
+              .releases
+              | map(select(.lifecycle == "released" and (.score // 0) >= 60))
+              | sort_by(-(.score // 0), .artist)
+              | .[]
+              | [
+                  (.releaseDate // "?"),
+                  ((.score // 0)|tostring),
+                  (.artist // "?"),
+                  (.albumTitle // "?"),
+                  ("spotify=" + (.spotify.status // "?")),
+                  ("added=" + (((.spotify.tracksAdded // [])|length)|tostring)),
+                  ("attempts=" + ((.spotify.attempts // 0)|tostring)),
+                  ("error=" + (.spotify.error // ""))
+                ]
+              | @tsv
+            )
+          ' /tmp/feed.json
