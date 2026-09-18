@@ -33,6 +33,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          sleep 45
           curl -fsS https://transmissionalbum.netlify.app/.netlify/functions/v2-spotify-backlog             | tee /tmp/backlog.html
           echo
           echo "---- readable summary ----"
