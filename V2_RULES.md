@@ -41,3 +41,10 @@ The front page answers:
 4. Did Spotify sync it?
 
 Debug/backfill machinery does not belong in the primary UI.
+
+
+## Failure handling
+- External phases fail independently. RSS, Wikipedia, release transition, and Spotify failures must not roll back successful work from another phase.
+- An RSS URL becomes "seen" only after it was successfully classified and, when applicable, successfully scored/handled.
+- Transient extraction or scoring failures remain retryable.
+- The engine must persist a failed `lastRun` with phase errors instead of leaving the UI showing a stale successful scan.

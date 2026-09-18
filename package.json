@@ -9,8 +9,8 @@
     "test": "node test/v2Logic.js"
   },
   "dependencies": {
-    "@netlify/blobs": "^10.7.9",
-    "dotenv": "^16.4.5"
+    "@netlify/blobs": "10.7.13",
+    "dotenv": "16.6.1"
   },
   "engines": {
     "node": ">=18"
