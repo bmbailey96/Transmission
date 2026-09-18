@@ -2,7 +2,12 @@ const { connectLambda } = require('@netlify/blobs');
 const { getState, saveState, allReleases } = require('../../lib/v2/store');
 const { syncSpotify, SCORE_FOR_SPOTIFY } = require('../../lib/v2/engine');
 
-const MAX_PER_RUN = 4;
+const MAX_PER_RUN = 2;
+const DELAY_BETWEEN_ALBUMS_MS = 5000;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 exports.handler = async function (event) {
   connectLambda(event);
@@ -46,6 +51,7 @@ exports.handler = async function (event) {
     const results = [];
 
     for (const release of batch) {
+      if (results.length > 0) await sleep(DELAY_BETWEEN_ALBUMS_MS);
       await syncSpotify(release, state);
       await saveState(state);
       results.push({
