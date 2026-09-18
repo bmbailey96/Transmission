@@ -14,3 +14,9 @@
 [functions."weekly-digest"]
   # 14:30 UTC = 8:30am MDT / 7:30am MST.
   schedule = "30 14 * * 1"
+
+
+# Temporary-safe catch-up loop. The function itself only touches eligible
+# 75+ records whose per-album retry cooldown has expired, two at a time.
+[functions."v2-spotify-backlog"]
+  schedule = "47 * * * *"
