@@ -2,7 +2,7 @@ const { connectLambda } = require('@netlify/blobs');
 const { getState, saveState, allReleases } = require('../../lib/v2/store');
 const { syncSpotify, SCORE_FOR_SPOTIFY } = require('../../lib/v2/engine');
 
-const MAX_PER_RUN = 4;
+const MAX_PER_RUN = 2;
 
 exports.handler = async function (event) {
   connectLambda(event);
