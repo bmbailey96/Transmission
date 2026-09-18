@@ -1,0 +1,37 @@
+name: Run V2 Spotify backlog batch
+
+on:
+  push:
+    branches:
+      - "ops/v2-spotify-backlog-live"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for production backlog endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          ready=0
+          for i in $(seq 1 36); do
+            body="$(curl -fsS https://transmissionalbum.netlify.app/.netlify/functions/v2-spotify-backlog || true)"
+            if printf '%s' "$body" | jq -e '.ok == true' >/dev/null 2>&1; then
+              printf '%s
+' "$body" > /tmp/result.json
+              ready=1
+              echo "Production endpoint is live."
+              break
+            fi
+            echo "Backlog endpoint not ready yet, attempt $i/36"
+            sleep 10
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "Timed out waiting for production."
+            exit 1
+          fi
+
+      - name: Show backlog result
+        shell: bash
+        run: |
+          cat /tmp/result.json
