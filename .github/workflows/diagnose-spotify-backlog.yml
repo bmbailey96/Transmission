@@ -1,0 +1,41 @@
+name: Diagnose Spotify backlog
+
+on:
+  push:
+    branches:
+      - "ops/spotify-backlog-2026-09-18"
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect legacy releases after Ada Lea
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS https://transmissionalbum.netlify.app/.netlify/functions/releases > /tmp/releases.json
+          jq -r '
+            .releases
+            | map(select(.category == "already-released"))
+            | sort_by(.releaseDate // "")
+            | (map(select((.artist // "" | ascii_downcase) | test("ada lea|ada lee"))) | last) as $ada
+            | "ADA ANCHOR: " + (if $ada then ($ada.artist + " — " + $ada.albumTitle + " // " + ($ada.releaseDate // "date unknown") + " // " + (($ada.score // 0)|tostring)) else "NOT FOUND" end),
+              "",
+              "RELEASES AT 60+ FROM ADA FORWARD:",
+              (
+                .[]
+                | select($ada == null or ((.releaseDate // "") >= ($ada.releaseDate // "")))
+                | select((.score // 0) >= 60)
+                | [
+                    (.releaseDate // "?"),
+                    ((.score // 0)|tostring),
+                    (.artist // "?"),
+                    (.albumTitle // "?"),
+                    ("found=" + ((.spotifyStatus.found // false)|tostring)),
+                    ("attempted=" + ((.spotifyStatus.attempted // false)|tostring)),
+                    ("added=" + (((.spotifyStatus.tracksAdded // [])|length)|tostring)),
+                    ("error=" + (.spotifyStatus.error // ""))
+                  ]
+                | @tsv
+              )
+          ' /tmp/releases.json
