@@ -28,3 +28,8 @@
   # fixed UTC, so this drifts to 7:30am local during Mountain Standard Time
   # (winter). See README note on DST if you want this corrected twice a year.
   schedule = "30 14 * * 1"
+
+# Retry Spotify writes that failed after an album was otherwise processed.
+# Confirmed "not found on Spotify" results are terminal and are not retried.
+[functions."backfill-spotify-retry"]
+  schedule = "17 */6 * * *"
