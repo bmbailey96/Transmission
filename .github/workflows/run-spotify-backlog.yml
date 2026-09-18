@@ -1,0 +1,39 @@
+name: Run Spotify backlog batch
+
+on:
+  push:
+    branches:
+      - "ops/spotify-backlog-2026-09-18"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for production deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          ready=0
+          for i in $(seq 1 36); do
+            page="$(curl -fsS https://transmissionalbum.netlify.app/ || true)"
+            if printf '%s' "$page" | grep -q '75%+ STRONG SIGNALS'; then
+              ready=1
+              echo "Production is on the picky-threshold build."
+              break
+            fi
+            echo "Production not updated yet, attempt $i/36"
+            sleep 10
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "Timed out waiting for the new production build."
+            exit 1
+          fi
+
+      - name: Run one backlog batch
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS https://transmissionalbum.netlify.app/.netlify/functions/backfill-spotify-retry             | tee /tmp/backlog.html
+          echo
+          echo "---- readable summary ----"
+          sed -E 's/<[^>]+>/ /g; s/&mdash;/—/g; s/&larr;/←/g; s/[[:space:]]+/ /g' /tmp/backlog.html
