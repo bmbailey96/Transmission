@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { releaseKey } = require('../lib/v2/store');
-const { lifecycleFor, spotifyBackoffHours } = require('../lib/v2/engine');
+const { lifecycleFor, spotifyBackoffHours, safeIsoDate } = require('../lib/v2/engine');
 
 assert.equal(releaseKey('Phoebe Bridgers', 'Lost Weekend'), 'phoebe-bridgers__lost-weekend');
 assert.equal(releaseKey('Godspeed You! Black Emperor', 'NO TITLE'), 'godspeed-you-black-emperor__no-title');
@@ -13,5 +13,9 @@ assert.equal(spotifyBackoffHours(1), 3);
 assert.equal(spotifyBackoffHours(2), 6);
 assert.equal(spotifyBackoffHours(5), 48);
 assert.equal(spotifyBackoffHours(9), 48);
+
+assert.equal(safeIsoDate('2026-09-18T12:30:00Z'), '2026-09-18T12:30:00.000Z');
+assert.equal(safeIsoDate('not a date'), null);
+assert.equal(safeIsoDate(null), null);
 
 console.log('Transmission V2 logic checks passed');
