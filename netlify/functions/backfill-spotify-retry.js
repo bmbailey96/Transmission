@@ -2,12 +2,24 @@ const { connectLambda } = require('@netlify/blobs');
 const { getAllReleases, upsertRelease } = require('../../lib/storage/releaseStore');
 const { addAlbumToPlaylist } = require('../../lib/spotify/spotifyPlaylist');
 
-const SCORE_THRESHOLD_FOR_PLAYLIST = 50; // same bar the mover uses
+const SCORE_THRESHOLD_FOR_PLAYLIST = 75; // backlog only the strongest missed releases
 const MAX_PER_RUN = 4; // was 15: a real run at that size tripped Spotify's 429 QUOTA_EXCEEDED after burning through token refreshes with zero delay between albums, see spotifyPlaylist.js's token cache and DELAY_BETWEEN_ALBUMS_MS below
 const DELAY_BETWEEN_ALBUMS_MS = 900; // give Spotify's rate limiter room between albums instead of firing search/tracks/playlist calls back to back
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function releaseMoment(r) {
+  if (r?.releaseDate) {
+    const t = new Date(r.releaseDate + 'T12:00:00Z').getTime();
+    if (Number.isFinite(t)) return t;
+  }
+  for (const value of [r?.alreadyReleasedAt, r?.spotifyLastAttemptAt, r?.updatedAt, r?.discoveredAt]) {
+    const t = value ? new Date(value).getTime() : NaN;
+    if (Number.isFinite(t)) return t;
+  }
+  return 0;
 }
 
 /**
@@ -45,13 +57,30 @@ exports.handler = async function (event) {
     };
   }
 
-  const candidates = releases.filter(
-    (r) =>
-      r.category === 'already-released' &&
-      typeof r.score === 'number' &&
-      r.score >= SCORE_THRESHOLD_FOR_PLAYLIST &&
-      !(r.spotifyStatus && r.spotifyStatus.found)
-  );
+  const successful = releases
+    .filter((r) => r.category === 'already-released' && r.spotifyStatus?.found === true)
+    .sort((a, b) => releaseMoment(b) - releaseMoment(a));
+  const anchor = successful[0] || null;
+  const anchorMoment = anchor
+    ? releaseMoment(anchor)
+    : Date.now() - 60 * 24 * 60 * 60 * 1000;
+
+  // Catch up only after the last confirmed successful Spotify release.
+  // A confirmed found:false is terminal. Missing status and real API errors
+  // are retryable, and the strongest missed records go first.
+  const candidates = releases
+    .filter((r) => {
+      const s = r.spotifyStatus;
+      const retryable = !s || !s.attempted || !!s.error;
+      return (
+        r.category === 'already-released' &&
+        typeof r.score === 'number' &&
+        r.score >= SCORE_THRESHOLD_FOR_PLAYLIST &&
+        releaseMoment(r) >= anchorMoment &&
+        retryable
+      );
+    })
+    .sort((a, b) => (b.score - a.score) || (releaseMoment(b) - releaseMoment(a)));
   const toProcess = candidates.slice(0, MAX_PER_RUN);
 
   const results = [];
@@ -114,7 +143,8 @@ a{color:#9fd}
 </style></head><body>
 <h1>Spotify add retry</h1>
 <p><a href="/">&larr; back</a></p>
-<p>${candidates.length} already-released albums score 50+ and have no confirmed Spotify add on record. Processed ${toProcess.length} this run: ${added.length} added tracks, ${alreadyThere.length} already had them, ${notFound.length} not found on Spotify, ${errored.length} hit a real error.</p>
+<p>Anchor: ${anchor ? `${anchor.artist} — ${anchor.albumTitle} (${anchor.releaseDate || 'date unknown'})` : 'no confirmed success found; using the last 60 days'}.</p>
+<p>${candidates.length} later releases score ${SCORE_THRESHOLD_FOR_PLAYLIST}+ and still need a Spotify attempt. Processed ${toProcess.length} this run: ${added.length} added tracks, ${alreadyThere.length} already had them, ${notFound.length} not found on Spotify, ${errored.length} hit a real error.</p>
 <p>${candidates.length - toProcess.length} still left, revisit this page to keep going.</p>
 ${results.length ? results.map(row).join('\n') : '<p>Nothing to do.</p>'}
 </body></html>`;
