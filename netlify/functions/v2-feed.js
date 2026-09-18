@@ -1,6 +1,8 @@
+const { connectLambda } = require('@netlify/blobs');
 const { getState, allReleases } = require('../../lib/v2/store');
 
-exports.handler = async function () {
+exports.handler = async function (event) {
+  connectLambda(event);
   try {
     const state = await getState();
     const releases = allReleases(state).sort((a,b) => {
