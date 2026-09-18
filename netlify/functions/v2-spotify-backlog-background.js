@@ -14,8 +14,6 @@ exports.handler = async function (event) {
 
   try {
     const state = await getState();
-    const now = Date.now();
-
     // Retire stale pending/error records that no longer clear the stricter
     // playlist bar, so they cannot consume manual or scheduled retry slots.
     for (const r of allReleases(state)) {
