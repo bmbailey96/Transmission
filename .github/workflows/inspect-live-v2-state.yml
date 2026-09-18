@@ -1,0 +1,33 @@
+name: Inspect live V2 Spotify state
+
+on:
+  push:
+    branches:
+      - "ops/inspect-only"
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read live V2 Spotify state
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS https://transmissionalbum.netlify.app/.netlify/functions/v2-feed > /tmp/feed.json
+          jq -r '
+            .releases
+            | map(select(.lifecycle == "released" and (.score // 0) >= 75))
+            | sort_by(-(.score // 0), .artist)
+            | .[]
+            | [
+                ((.score // 0)|tostring),
+                (.artist // "?"),
+                (.albumTitle // "?"),
+                ("spotify=" + (.spotify.status // "?")),
+                ("added=" + (((.spotify.tracksAdded // [])|join(", ")))),
+                ("attempts=" + ((.spotify.attempts // 0)|tostring)),
+                ("next=" + (.spotify.nextRetryAt // "")),
+                ("error=" + (.spotify.error // ""))
+              ]
+            | @tsv
+          ' /tmp/feed.json
