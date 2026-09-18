@@ -6,32 +6,21 @@ on:
       - "ops/v2-spotify-backlog-live"
 
 jobs:
-  run:
+  backlog:
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for production backlog endpoint
+      - name: Run one live backlog batch
         shell: bash
         run: |
           set -euo pipefail
-          ready=0
           for i in $(seq 1 36); do
-            body="$(curl -fsS https://transmissionalbum.netlify.app/.netlify/functions/v2-spotify-backlog || true)"
-            if printf '%s' "$body" | jq -e '.ok == true' >/dev/null 2>&1; then
-              printf '%s
-' "$body" > /tmp/result.json
-              ready=1
+            if curl -fsS               https://transmissionalbum.netlify.app/.netlify/functions/v2-spotify-backlog               -o /tmp/result.json; then
               echo "Production endpoint is live."
-              break
+              cat /tmp/result.json
+              exit 0
             fi
             echo "Backlog endpoint not ready yet, attempt $i/36"
             sleep 10
           done
-          if [ "$ready" -ne 1 ]; then
-            echo "Timed out waiting for production."
-            exit 1
-          fi
-
-      - name: Show backlog result
-        shell: bash
-        run: |
-          cat /tmp/result.json
+          echo "Timed out waiting for production."
+          exit 1
