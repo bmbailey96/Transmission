@@ -1,0 +1,37 @@
+name: Inspect V2 after backlog
+
+on:
+  push:
+    branches:
+      - "ops/inspect-v2-after-backlog"
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for background batch
+        run: sleep 55
+      - name: Read strong released records
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS https://transmissionalbum.netlify.app/.netlify/functions/v2-feed > /tmp/feed.json
+          jq -r '
+            "STRONG RELEASED 75+:",
+            (
+              .releases
+              | map(select(.lifecycle == "released" and (.score // 0) >= 75))
+              | sort_by(-(.score // 0), .artist)
+              | .[]
+              | [
+                  ((.score // 0)|tostring),
+                  (.artist // "?"),
+                  (.albumTitle // "?"),
+                  ("spotify=" + (.spotify.status // "?")),
+                  ("added=" + (((.spotify.tracksAdded // [])|length)|tostring)),
+                  ("attempts=" + ((.spotify.attempts // 0)|tostring)),
+                  ("error=" + (.spotify.error // ""))
+                ]
+              | @tsv
+            )
+          ' /tmp/feed.json
