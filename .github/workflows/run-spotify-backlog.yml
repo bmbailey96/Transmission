@@ -33,7 +33,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS https://transmissionalbum.netlify.app/.netlify/functions/backfill-spotify-retry             | tee /tmp/backlog.html
+          curl -fsS https://transmissionalbum.netlify.app/.netlify/functions/v2-spotify-backlog             | tee /tmp/backlog.html
           echo
           echo "---- readable summary ----"
-          sed -E 's/<[^>]+>/ /g; s/&mdash;/—/g; s/&larr;/←/g; s/[[:space:]]+/ /g' /tmp/backlog.html
+          cat /tmp/backlog.html
