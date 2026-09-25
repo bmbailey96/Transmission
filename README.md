@@ -67,6 +67,9 @@ feed and a separate My Albums tab for direct picks, to-hear, and anticipated
 records. Each release retains its cover, score band, evidence level, short
 headline, expandable reasoning, and Spotify status when released. Scores under
 60 are collapsed within each date. There is no 30-record cutoff. If credits
-block scoring, the status says so instead of reporting a healthy scan.
+block scoring, the status says so instead of reporting a healthy scan. Records
+whose date has passed appear in Out Now even while the engine is paused; an
+unrescored record is labeled as a pre-release score. A direct pick overrides
+its older model score and explanation in the feed.
 
 The old interface remains at `/legacy.html`.
