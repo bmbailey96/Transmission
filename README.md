@@ -12,6 +12,9 @@ The active data flow is:
 
 The homepage and Monday digest are read-only views of that same V2 state.
 
+The user's direct 2026 picks, albums to hear, and anticipated records live in
+`data/curated2026.js`. They are separate from the model's guesses in V2 state.
+
 Legacy discovery/mover/backfill functions remain in the repository for reference and rollback, but they are unscheduled.
 
 ## Discovery
@@ -48,15 +51,19 @@ For released albums above the threshold:
 
 A Spotify failure cannot make the album disappear from Transmission.
 
+The active discovery playlist accepts one track from an unfamiliar released
+album scored 85+, up to 50 tracks. Existing songs are not pruned by the engine.
+`node scripts/spotify-audit.js` makes a read-only full playlist report using
+the deployment's Spotify environment variables. Applying a reviewed report
+requires `--apply` and `SPOTIFY_EXPECTED_SNAPSHOT`; the script copies the entire
+playlist to a private archive and verifies its count before replacing tracks.
+
 ## Interface
 
 The radar/signal design stays.
 
-The primary page only answers:
-
-1. what is coming
-2. what just came out
-3. how strong the signal is
-4. whether Spotify synced it
+The primary page shows direct picks, the to-hear list, and a compact radar.
+Scores appear only for unfamiliar predicted releases. If credits block scoring,
+the page says so instead of reporting a healthy scan.
 
 The old interface remains at `/legacy.html`.

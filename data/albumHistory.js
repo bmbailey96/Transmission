@@ -1,7 +1,7 @@
 module.exports = `
-# Best Albums of 2026
+# Earlier 2026 snapshot (preserved for historical context; September 25 direct picks are in curated2026.js)
 
-Ranked / Current Favorites:
+Previously labeled Ranked / Current Favorites:
 Big Disgrace - Haute & Freddy; Oda - Daniela Andrade; Jean - Yebba; Singing - Gia Margaret; Waterville - Oliver Hazard; Live in 25 - Peach Pit; My New Band Believe - My New Band Believe; Wendy Eisenberg - Wendy Eisenberg; U - underscores; Strange Behavior - Katy Pinke.
 
 2026 Watchlist / Incoming:

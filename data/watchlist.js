@@ -7,6 +7,7 @@
 // Add to this directly as new favorites come up, no need to touch the
 // discovery pipeline code to do it.
 
+const { picks, toHear, anticipated } = require('./curated2026');
 const artists = [
   '22 Halo', 'Aaron West and The Roaring Twenties', 'Adrianne Lenker', 'Al Menne',
   'Alan Sparhawk & Trampled By Turtles', 'Aldous Harding', 'Alex G', 'Amen Dunes',
@@ -63,4 +64,6 @@ const artists = [
 // watched regardless of artist, e.g. '4AD', 'Saddle Creek'.
 const labels = [];
 
-module.exports = { artists, labels };
+// Directly named albums outrank guesses about which artists might matter.
+const currentArtists = [...picks, ...toHear, ...anticipated].map(x => x.artist);
+module.exports = { artists: [...new Set([...artists, ...currentArtists])], labels };
