@@ -21,7 +21,7 @@ let state=null,tab='picks';const $=id=>document.getElementById(id);
 function esc(s){const d=document.createElement('span');d.textContent=String(s??'');return d.innerHTML}
 function date(s){if(!s)return '';const [y,m,d]=s.split('-').map(Number);if(!y||!m||!d)return '';return new Date(y,m-1,d).toLocaleDateString('en-US',{month:'short',day:'numeric'})}
 function row(x,showDate=false){return `<div class="row"><div><span class="artist">${esc(x.artist)}</span><span class="album"> · ${esc(x.title)}</span>${x.note?` <span class="note">${esc(x.note)}</span>`:''}</div>${showDate&&x.date?`<span class="date">${esc(date(x.date))}</span>`:''}</div>`}
-function key(x){return (x.artist+' '+(x.title||x.albumTitle)).toLowerCase().replace(/[^a-z0-9]/g,'')}
+function key(x){return (x.artist+' '+(x.title||x.albumTitle)).toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'')}
 function render(){if(!state)return;let c=$('content'),u=state.curated||{picks:[],toHear:[],anticipated:[]};
  if(tab==='picks'){c.innerHTML=`<h2>My 2026 albums</h2><p class="hint">${u.picks.length} favorites and contenders. No number one yet.</p>`+u.picks.map(x=>row(x)).join('');return}
  if(tab==='listen'){c.innerHTML='<h2>To hear</h2><p class="hint">Out now. Nothing here counts as a favorite yet.</p>'+u.toHear.map(x=>row(x)).join('')+'<h3>Coming up</h3>'+u.anticipated.map(x=>row(x,true)).join('');return}
