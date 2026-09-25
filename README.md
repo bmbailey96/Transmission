@@ -62,8 +62,11 @@ playlist to a private archive and verifies its count before replacing tracks.
 
 The radar/signal design stays.
 
-The primary page shows direct picks, the to-hear list, and a compact radar.
-Scores appear only for unfamiliar predicted releases. If credits block scoring,
-the page says so instead of reporting a healthy scan.
+The primary page opens on the full chronological upcoming feed, with an out-now
+feed and a separate My Albums tab for direct picks, to-hear, and anticipated
+records. Each release retains its cover, score band, evidence level, short
+headline, expandable reasoning, and Spotify status when released. Scores under
+60 are collapsed within each date. There is no 30-record cutoff. If credits
+block scoring, the status says so instead of reporting a healthy scan.
 
 The old interface remains at `/legacy.html`.
