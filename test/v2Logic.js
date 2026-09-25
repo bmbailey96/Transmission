@@ -3,6 +3,7 @@ const { releaseKey } = require('../lib/v2/store');
 const { lifecycleFor, spotifyBackoffHours, safeIsoDate, SCORE_FOR_SPOTIFY, spotifyEligible } = require('../lib/v2/engine');
 const { picks, toHear, anticipated } = require('../data/curated2026');
 const { pickTracks, MAX_ACTIVE_TRACKS } = require('../lib/spotify/spotifyPlaylist');
+const { buildListeningHistorySection } = require('../lib/scoring/listeningHistory');
 
 assert.equal(releaseKey('Phoebe Bridgers', 'Lost Weekend'), 'phoebe-bridgers__lost-weekend');
 assert.equal(releaseKey('Godspeed You! Black Emperor', 'NO TITLE'), 'godspeed-you-black-emperor__no-title');
@@ -34,5 +35,6 @@ const sampleTracks = [
   {id:'two',name:'Another Song',duration_ms:210000,track_number:3},
 ];
 assert.equal(pickTracks(sampleTracks, [], 1)[0].id, 'one');
+assert.match(buildListeningHistorySection('an artist missing from the export'), /does not establish dislike/);
 
 console.log('Transmission V2 logic checks passed');
