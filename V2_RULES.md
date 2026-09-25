@@ -20,6 +20,11 @@ There is no score jitter, score-rescore loop, or second AI grading the first AI'
 ## Spotify
 Spotify is a side effect, not proof that release processing succeeded.
 
+Only unfamiliar released albums predicted at 85+ enter the discovery queue.
+At most one track per album is added, and additions pause at 50 tracks.
+Directly named favorites stay in the user's picks, not the sampling queue.
+An existing playlist is never silently trimmed by the scheduled engine.
+
 Terminal states:
 - `added`
 - `not_found`

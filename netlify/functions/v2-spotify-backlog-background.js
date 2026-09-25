@@ -1,6 +1,6 @@
 const { connectLambda } = require('@netlify/blobs');
 const { getState, saveState, allReleases } = require('../../lib/v2/store');
-const { syncSpotify, SCORE_FOR_SPOTIFY } = require('../../lib/v2/engine');
+const { syncSpotify, SCORE_FOR_SPOTIFY, spotifyEligible } = require('../../lib/v2/engine');
 
 const MAX_PER_RUN = 2;
 
@@ -17,7 +17,7 @@ exports.handler = async function (event) {
       if (
         r.lifecycle === 'released' &&
         typeof r.score === 'number' &&
-        r.score < SCORE_FOR_SPOTIFY &&
+        !spotifyEligible(r) &&
         (r.spotify?.status === 'pending' || r.spotify?.status === 'error')
       ) {
         r.spotify = { status: 'not_needed', attempts: r.spotify?.attempts || 0 };
@@ -27,12 +27,10 @@ exports.handler = async function (event) {
     const candidates = allReleases(state)
       .filter(r =>
         r.lifecycle === 'released' &&
-        typeof r.score === 'number' &&
-        r.score >= SCORE_FOR_SPOTIFY &&
+        spotifyEligible(r) &&
         (r.spotify?.status === 'pending' || r.spotify?.status === 'error') &&
         (r.spotify?.attempts || 0) < 5 &&
         (
-          r.spotify?.status === 'pending' ||
           !r.spotify.nextRetryAt ||
           new Date(r.spotify.nextRetryAt).getTime() <= now
         )

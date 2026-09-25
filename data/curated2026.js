@@ -1,0 +1,68 @@
+// Brandon's direct judgments, September 25, 2026. Order is not a ranking.
+// Keep these separate from predictions and from albums merely saved to hear.
+const picks = [
+  ['Squirrel Flower', 'Say a Prayer to the Gods of Getting Going'],
+  ['Kevin Morby', 'Little Wide Open'],
+  ['Phoebe Bridgers', 'Lost Weekend'],
+  ['Friko', 'Something Worth Waiting For'],
+  ['underscores', 'U'],
+  ['My New Band Believe', 'My New Band Believe'],
+  ['Maria BC', 'Marathon'],
+  ['feeble little horse', 'Bitknot'],
+  ['Snail Mail', 'Ricochet'],
+  ['Broken Social Scene', 'Remember the Humans'],
+  ['Bon Iver', 'Volumes: One'],
+  ['Ratboys', "Singin' to an Empty Chair"],
+  ['Yebba', 'Jean'],
+  ['Gia Margaret', 'Singing'],
+  ['This Is Lorelei', 'The Singer in My Band'],
+  ['Slow Pulp', 'Melodie'],
+  ['Babehoven', 'I See Them, I See Me'],
+  ['Wild Pink', 'Still Coming Down'],
+  ['After', 'Fell Asleep in the Sun'],
+  ['Gurriers', "Nobody's Coming to Save You"],
+  ['Julia Jacklin', 'The Gem', 'Likely top five'],
+  ['Smidley', 'Murphy Horse'],
+  ['Meg Lui', 'Instant Validation'],
+  ['Blondshell', 'Violins'],
+  ["Hey, I'm Outside", 'Loud Ass Barking Dogs'],
+  ['Robber Robber', 'Two Wheels Move the Soul'],
+  ['Adam Wiltzie & Jóhann Jóhannsson', 'Friendship Survival Guide'],
+  ['Briston Maroney', 'Normal Heights'],
+  ['Sharp Pins', 'Mod Mayday 23'],
+  ['Mabe Fratti & Bill Orcutt', 'Almost Waking'],
+  ['The Handover', 'New Old Medicine'],
+  ['Klara Lewis', 'Opening'],
+  ['Lambchop', 'Punching the Clown'],
+  ['True Mountain Laurel', 'Angel So Bad'],
+  ['Dinosaur Jr.', 'There Near'],
+  ['Westside Cowboy', 'It Goes On'],
+  ['BIG|BRAVE', 'In Grief or in Hope'],
+  ['Brennan Wedl', 'Brennan Wedl'],
+  ['The Mountain Goats', 'Days'],
+  ['Emma Ruth Rundle', 'These Killing Times'],
+].map(([artist, title, note]) => ({ artist, title, note: note || null }));
+
+const toHear = [
+  ['claire rousay & Martyna Basta', 'hotel room'],
+  ['Jason Dungan & Johan Carøe', 'Routine'],
+  ['Gilla Band', 'Pugnello'],
+  ['Told Slant', "What's Up"],
+  ['Russian Circles', 'Nine'],
+].map(([artist, title]) => ({ artist, title }));
+
+const anticipated = [
+  ['Greg Freeman', 'All Set the Bone', '2026-10-02'],
+  ['Emily A. Sprague', 'Cyano', '2026-10-02'],
+  ['Lily Seabird', 'Lightspheres on Their Way', '2026-10-02', 'Digital; physical edition is out'],
+  ['@', 'Autosmile', '2026-10-16'],
+  ['Sadurn', 'The Underworld', '2026-10-16'],
+  ['Fenne Lily', 'Win Win', '2026-10-23'],
+  ['Sour Widows', 'Sigil', '2026-10-23'],
+  ['Stephen Steinbrink', 'In a Split Mirror', '2026-10-30'],
+  ['Do Nothing', 'Friend World', '2026-11-06'],
+  ['Oso Oso', 'an exchange of information', '2026-11-06'],
+  ['Current Joys', 'ROSEBUD', '2026-11-06'],
+].map(([artist, title, date, note]) => ({ artist, title, date, note: note || null }));
+
+module.exports = { picks, toHear, anticipated };
