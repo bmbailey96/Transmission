@@ -73,3 +73,22 @@ unrescored record is labeled as a pre-release score. A direct pick overrides
 its older model score and explanation in the feed.
 
 The old interface remains at `/legacy.html`.
+
+
+### Release scoring outages and Rewind email checks
+
+Release-date transitions retain the existing prediction when Anthropic scoring
+fails. These records remain explicitly unrescored and retry once per day; no
+replacement score is invented. Spotify still requires 85+ and excludes confirmed
+picks, selects one song, and stops at the existing 50-track limit. New discovery
+still requires a funded Anthropic API account.
+
+Rewind uses this site's existing `RESEND_API_KEY` and `DIGEST_FROM_EMAIL` for daily
+selected-film checks at 14:20 UTC. `rewind-watchlist` verifies the browser's GitHub
+sign-in against `bmbailey96`, never stores that token, and stores only film IDs and
+titles in the separate `rewind-alerts` store. Coyote vs. Acme is the initial film.
+The recipient is fixed to `bmbailey96@gmail.com`. Provider/date changes are deduped
+per film; failed fetches and failed emails do not advance the notification cursor.
+The first check reports current providers and future dates. US theatrical dates
+are national listings, not proof of local showtimes. Optional `TMDB_API_KEY`
+overrides Rewind's existing public API key.

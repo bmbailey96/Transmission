@@ -1,0 +1,15 @@
+const assert = require('node:assert/strict');
+const {eventsFor,pendingEvents} = require('../lib/rewind/availability');
+const netflix = {provider_id:8,provider_name:'Netflix'};
+const max = {provider_id:1899,provider_name:'HBO Max'};
+const before = eventsFor({flatrate:[netflix]},[], '2026-10-04');
+const after = eventsFor({flatrate:[netflix,max]},[], '2026-10-04');
+assert.equal(pendingEvents(after,before.map(e=>e.key))[0].label,'Streaming on HBO Max');
+assert.deepEqual(pendingEvents(after,after.map(e=>e.key)),[]);
+assert.equal(eventsFor({rent:[netflix]},[])[0].label,'Rent on Netflix');
+assert.equal(eventsFor({flatrate:[{provider_id:2,provider_name:'AMC Plus Amazon Channel'}]},[])[0].label,'Streaming on AMC Plus (separate subscription)');
+const dates = [{type:3,release_date:'2026-10-05T00:00:00Z'}];
+const future = eventsFor({},dates,'2026-10-04');
+assert.equal(pendingEvents(eventsFor({},dates,'2026-10-05'),future.map(e=>e.key)).length,1);
+assert.match(future[0].label,/US theatrical scheduled/);
+console.log('Rewind alert changes and deduplication passed');

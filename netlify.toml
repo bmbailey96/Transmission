@@ -20,3 +20,7 @@
 # 75+ records whose per-album retry cooldown has expired, two at a time.
 [functions."v2-spotify-backlog"]
   schedule = "47 * * * *"
+
+# Rewind uses this site's existing Resend configuration for selected-film alerts.
+[functions."rewind-check"]
+  schedule = "20 14 * * *"
