@@ -2,7 +2,7 @@ const { connectLambda, getStore } = require('@netlify/blobs');
 const {movieEvents,pendingEvents,digestKey,escapeHtml} = require('../../lib/rewind/availability');
 exports.handler = async event => {
   connectLambda(event);
-  const store = getStore({name:'rewind-alerts',consistency:'strong'});
+  const store = getStore({name:'rewind-alerts'});
   let settings = await store.get('watchlist',{type:'json'});
   if (!settings) {
     settings = {enabled:true,movies:[{id:1204680,title:'Coyote vs. Acme'}]};

@@ -11,7 +11,7 @@ exports.handler = async event => {
     const userRes = await fetch('https://api.github.com/user',{headers:{Authorization:authorization,'User-Agent':'Rewind'},signal:AbortSignal.timeout(15000)});
     if (!userRes.ok || (await userRes.json()).login !== 'bmbailey96') return reply(403,{error:'This card belongs to bmbailey96.'});
     connectLambda(event);
-    const store = getStore({name:'rewind-alerts',consistency:'strong'});
+    const store = getStore({name:'rewind-alerts'});
     const settings = await store.get('watchlist',{type:'json'}) || {enabled:true,movies:[{id:1204680,title:'Coyote vs. Acme'}]};
     if (event.httpMethod === 'GET') return reply(200,{...settings,email:'bmbailey96@gmail.com',configured:!!(process.env.RESEND_API_KEY && process.env.DIGEST_FROM_EMAIL)});
     if ((event.body || '').length > 100000) return reply(413,{error:'Card is too large.'});
