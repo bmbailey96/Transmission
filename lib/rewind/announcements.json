@@ -1,0 +1,101 @@
+{
+  "updatedAt": "2026-10-05",
+  "announcements": [
+    {
+      "tmdbId": 1742441,
+      "title": "V/H/S/Mixtape",
+      "kind": "subscription",
+      "provider": "Shudder",
+      "date": "2026-10-09",
+      "region": "US",
+      "source": "Shudder official US lineup",
+      "sourceUrl": "https://letterboxd.com/shudder/list/october-2026-horror-films-coming-to-shudder/detail/",
+      "checkedAt": "2026-10-05",
+      "expires": "2027-01-31"
+    },
+    {
+      "tmdbId": 1393929,
+      "title": "Hallowarrior",
+      "kind": "subscription",
+      "provider": "Shudder",
+      "date": "2026-10-16",
+      "region": "US",
+      "source": "Shudder official US lineup",
+      "sourceUrl": "https://letterboxd.com/shudder/list/october-2026-horror-films-coming-to-shudder/detail/",
+      "checkedAt": "2026-10-05",
+      "expires": "2027-01-31"
+    },
+    {
+      "tmdbId": 1290418,
+      "title": "The Cycle",
+      "kind": "subscription",
+      "provider": "Shudder",
+      "date": "2026-10-23",
+      "region": "US",
+      "source": "Shudder official US lineup",
+      "sourceUrl": "https://letterboxd.com/shudder/list/october-2026-horror-films-coming-to-shudder/detail/",
+      "checkedAt": "2026-10-05",
+      "expires": "2027-01-31"
+    },
+    {
+      "tmdbId": 1308972,
+      "title": "Big Baby",
+      "kind": "subscription",
+      "provider": "Shudder",
+      "date": "2026-10-30",
+      "region": "US",
+      "source": "Shudder official US lineup",
+      "sourceUrl": "https://letterboxd.com/shudder/list/october-2026-horror-films-coming-to-shudder/detail/",
+      "checkedAt": "2026-10-05",
+      "expires": "2027-01-31"
+    },
+    {
+      "tmdbId": 1308388,
+      "title": "Hunting Matthew Nichols",
+      "kind": "subscription",
+      "provider": "Shudder",
+      "date": "2026-10-31",
+      "region": "US",
+      "source": "Shudder official US lineup",
+      "sourceUrl": "https://letterboxd.com/shudder/list/october-2026-horror-films-coming-to-shudder/detail/",
+      "checkedAt": "2026-10-05",
+      "expires": "2027-01-31"
+    },
+    {
+      "tmdbId": 1284465,
+      "title": "The Death of Robin Hood",
+      "kind": "subscription",
+      "provider": "HBO Max",
+      "date": "2026-10-16",
+      "region": "US",
+      "source": "HBO Max official October lineup",
+      "sourceUrl": "https://press.wbd.com/us/media-release/hbo-max/whats-new-hbo-max-october-1",
+      "checkedAt": "2026-10-05",
+      "expires": "2027-01-31"
+    },
+    {
+      "tmdbId": 950028,
+      "title": "The Invite",
+      "kind": "subscription",
+      "provider": "HBO Max",
+      "date": "2026-10-23",
+      "region": "US",
+      "source": "HBO Max official October lineup",
+      "sourceUrl": "https://press.wbd.com/us/media-release/hbo-max/whats-new-hbo-max-october-1",
+      "checkedAt": "2026-10-05",
+      "expires": "2027-01-31"
+    },
+    {
+      "tmdbId": 1339713,
+      "title": "Obsession",
+      "kind": "digital",
+      "provider": null,
+      "date": "2026-06-30",
+      "region": "US",
+      "source": "Universal Pictures Home Entertainment",
+      "sourceUrl": "https://www.universalpicturesathome.com/press-release/obsession-press-release",
+      "checkedAt": "2026-10-05"
+    }
+  ],
+  "coverage": "Selected verified announcements. This is not a complete streaming calendar."
+}

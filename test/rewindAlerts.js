@@ -16,3 +16,11 @@ console.log('Rewind alert changes and deduplication passed');
 
 assert.equal(eventsFor({ads:[{provider_id:73,provider_name:'Tubi'}]},[])[0].label,'Free with ads on Tubi');
 assert.equal(eventsFor({flatrate:[{provider_id:1,provider_name:'HBO Max Amazon Channel'}]},[])[0].label,'Separate subscription: HBO Max Amazon Channel (add-on channel)');
+const {eligibleEvents,announcementEvents}=require('../lib/rewind/availability');
+const options=eventsFor({flatrate:[netflix,max,{provider_name:'Shudder Amazon Channel',provider_id:201}],ads:[{provider_name:'Tubi',provider_id:73}],rent:[{provider_name:'Amazon Video',provider_id:10}]},dates,'2026-10-04',['Netflix']);
+assert.equal(eligibleEvents(options,{mode:'mine'}).length,2);
+assert.ok(eligibleEvents(options,{mode:'mine'}).every(e=>e.kind==='free'||e.included));
+assert.equal(eligibleEvents(options,{mode:'rental',maxPrice:6}).length,0);
+assert.equal(eligibleEvents([{kind:'rent',price:null},{kind:'rent',price:19.99},{kind:'buy',price:3.99},{kind:'rent',price:5.99}],{mode:'rental',maxPrice:5.99}).length,1);
+const announced=announcementEvents(1290418,['Shudder'],'2026-10-05');assert.equal(announced[0].date,'2026-10-23');assert.equal(eligibleEvents(announced,{mode:'mine'}).length,1);assert.equal(eligibleEvents(announcementEvents(1290418,[],'2026-10-05'),{mode:'mine'}).length,0);
+console.log('Per-film alert modes: included/free only, quoted rental thresholds, source announcements passed');
