@@ -1,4 +1,2 @@
-const {connectLambda,getStore}=require('@netlify/blobs');
-const {refreshCinema}=require('../../lib/rewind/cinema');
-exports.config={schedule:'0 */6 * * *'};
-exports.handler=async event=>{connectLambda(event);const store=getStore({name:'rewind-cinema'});const previous=await store.get('calendar',{type:'json'});await store.setJSON('calendar',await refreshCinema(previous));return {statusCode:200,body:'Calendar checked'};};
+// Scheduled dispatcher keeps Render cold starts outside the 30-second schedule limit.
+exports.handler=async()=>{const r=await fetch('https://transmissionalbum.netlify.app/.netlify/functions/rewind-cinema-refresh-background',{method:'POST',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('Calendar background refresh was not accepted');return {statusCode:200,body:'Calendar refresh started'};};

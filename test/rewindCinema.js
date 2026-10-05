@@ -6,3 +6,6 @@ const local=parseLocal(fs.readFileSync(__dirname+'/fixtures/kalispell.html','utf
 assert.equal(inferredDate(1,23,'2026-12-25'),'2027-01-23');assert.equal(inferredDate(12,31,'2027-01-02'),'2026-12-31');assert.equal(inferredDate(2,31,'2026-10-05',2027),null);
 assert.throws(()=>parseFathom('<h1>blocked</h1>'));assert.throws(()=>parseLocal('<h1>blocked</h1>'));assert.equal(safeURL('https://evil.com/pay',['tickets.fandango.com']),null);
 console.log('Cinema: source fixtures, national windows vs exact screenings, ticket hosts, calendar year rollover and layout failures passed');
+const {normalizeLocalService}=require('../lib/rewind/cinema');
+const body={generated_at:new Date().toISOString(),movies:[{title:'Favorite',dates:['2026-10-06','2026-10-08','bad']} ]};
+const normalized=normalizeLocalService(body,'2026-10-05');assert.equal(normalized[0].dates.length,2);assert.equal(normalized[0].screenings.length,0,'A date-only feed must not invent screening times');assert.throws(()=>normalizeLocalService({error:'down',movies:[]},'2026-10-05'));

@@ -36,11 +36,11 @@ exports.handler = async event => {
       for(const [kind,key] of [['National Fathom event','events'],['Kalispell screenings listed','local']]){
         if(calendar[key]?.stale)continue;
         for(const item of calendar[key]?.items||[]){if(item.end<day)continue;const match=films.find(m=>H.matchEvent(item,m));if(!match&&!followed.has(item.id))continue;
-          const dates=(item.dates||[]).filter(d=>d>=day);const fingerprint='cinema:'+item.id+':'+JSON.stringify({dates:item.dates,ranges:item.ranges});
-          if(!known.includes(fingerprint))fresh.push({key:fingerprint,label:kind+': '+item.title+' · '+(item.dateLabel||dates.join(', ')),link:item.url});
+          const dates=(item.dates||[]).filter(d=>d>=day);const keys=[...dates.map(d=>'cinema:'+item.id+':date:'+d),...(item.ranges||[]).filter(r=>r.end>=day).map(r=>'cinema:'+item.id+':window:'+r.start+':'+r.end)];const newKeys=keys.filter(key=>!known.includes(key));
+          if(newKeys.length)fresh.push({key:'cinema:'+item.id+':'+digestKey(newKeys),checkpointKeys:newKeys,label:kind+': '+item.title+' · '+(item.dateLabel||dates.join(', ')),link:item.url});
         }
       }
-      if(fresh.length){changed.push({movie:{title:'Back on the big screen'},events:fresh});cinemaCheckpoint=[...new Set([...known,...fresh.map(e=>e.key)])].slice(-2000);}
+      if(fresh.length){changed.push({movie:{title:'Back on the big screen'},events:fresh});cinemaCheckpoint=[...new Set([...known,...fresh.flatMap(e=>e.checkpointKeys)])].slice(-2000);}
     }catch(err){console.error('Rewind cinema: '+err.message);}
   }
   const receipt = await store.get('receipt',{type:'json'}) || {};
