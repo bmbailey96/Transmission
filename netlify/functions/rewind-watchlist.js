@@ -20,7 +20,8 @@ exports.handler = async event => {
     if (data.movies.some(m => !Number.isSafeInteger(m.id) || m.id <= 0 || typeof m.title !== 'string')) return reply(400,{error:'Invalid film.'});
     if (data.enabled && !(process.env.RESEND_API_KEY && process.env.DIGEST_FROM_EMAIL)) return reply(503,{error:'Email service is not configured.'});
     const movies = [...new Map(data.movies.map(m => [m.id,{id:m.id,title:m.title.slice(0,200)}])).values()];
-    const next = {enabled:data.enabled,movies,updatedAt:new Date().toISOString()};
+    const services = Array.isArray(data.services) ? data.services.filter(s=>typeof s === 'string' && s.length < 60).slice(0,30) : settings.services;
+    const next = {enabled:data.enabled,movies,...(services ? {services} : {}),updatedAt:new Date().toISOString()};
     await store.setJSON('watchlist',next);
     return reply(200,{ok:true,count:movies.length,email:'bmbailey96@gmail.com'});
   } catch (err) { return reply(500,{error:err.message}); }

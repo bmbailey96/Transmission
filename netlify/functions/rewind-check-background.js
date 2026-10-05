@@ -13,7 +13,7 @@ exports.handler = async event => {
   const updates = [];
   for (const movie of settings.movies) {
     try {
-      const events = await movieEvents(movie.id);
+      const events = await movieEvents(movie.id,settings.services);
       const prior = await store.get(`film-${movie.id}`,{type:'json'});
       // First check reports current providers and future dates. Failed lookups never
       // erase previous observations or manufacture availability changes.
