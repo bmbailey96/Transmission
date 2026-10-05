@@ -26,12 +26,30 @@ exports.handler = async event => {
       if (fresh.length) { changed.push({movie,events:fresh}); updates.push({id:movie.id,policy,seen:[...new Set([...(policyChanged?[]:prior?.seen || []),...eligible.map(e=>e.key)])]}); }
     } catch (err) { console.error(`Rewind film ${movie.id}: ${err.message}`); }
   }
+  let cinemaCheckpoint=null;
+  if(settings.eventAlerts){
+    try{
+      const {refreshCinema,todayDenver}=require('../../lib/rewind/cinema'),H=require('../../lib/rewind/hub-model');
+      const cinemaStore=getStore({name:'rewind-cinema'});let calendar=await cinemaStore.get('calendar',{type:'json'});
+      if(!calendar||Date.now()-calendar.generatedAt>6*3600000){calendar=await refreshCinema(calendar);await cinemaStore.setJSON('calendar',calendar);}
+      const films=[...settings.movies,...settings.eventFilms||[]],followed=new Set(settings.followedEvents||[]),known=await store.get('cinema-seen',{type:'json'})||[],fresh=[];const day=todayDenver();
+      for(const [kind,key] of [['National Fathom event','events'],['Kalispell screenings listed','local']]){
+        if(calendar[key]?.stale)continue;
+        for(const item of calendar[key]?.items||[]){if(item.end<day)continue;const match=films.find(m=>H.matchEvent(item,m));if(!match&&!followed.has(item.id))continue;
+          const dates=(item.dates||[]).filter(d=>d>=day);const fingerprint='cinema:'+item.id+':'+JSON.stringify({dates:item.dates,ranges:item.ranges});
+          if(!known.includes(fingerprint))fresh.push({key:fingerprint,label:kind+': '+item.title+' · '+(item.dateLabel||dates.join(', ')),link:item.url});
+        }
+      }
+      if(fresh.length){changed.push({movie:{title:'Back on the big screen'},events:fresh});cinemaCheckpoint=[...new Set([...known,...fresh.map(e=>e.key)])].slice(-2000);}
+    }catch(err){console.error('Rewind cinema: '+err.message);}
+  }
   const receipt = await store.get('receipt',{type:'json'}) || {};
   if (!changed.length) {await store.setJSON('receipt',{...receipt,checkedAt:new Date().toISOString()});return {statusCode:200};}
   const key = digestKey(changed);
   const html = `<h2>Rewind: something you’re waiting for changed</h2>${changed.map(({movie,events})=>`<h3>${escapeHtml(movie.title)}</h3><ul>${events.map(e=>`<li>${escapeHtml(e.label)}${e.link ? ` <a href="${escapeHtml(/^https:\/\//.test(e.link)?e.link:`https://www.themoviedb.org/movie/${movie.id}/watch?locale=US`)}">Source / viewing options</a>` : ''}</li>`).join('')}</ul>`).join('')}<p>US release listings are not confirmed Kalispell showtimes. Provider listings can lag. Digital dates do not identify a subscription service or a price reduction. Announced dates are labeled separately from current offers. No estimates trigger emails.</p>`;
   const res = await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${process.env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`rewind-${key}`},body:JSON.stringify({from:process.env.DIGEST_FROM_EMAIL,to:'bmbailey96@gmail.com',subject:`Rewind: ${changed.map(c=>c.movie.title).join(', ').slice(0,180)}`,html})});
   if (!res.ok) throw Error(`Rewind email failed: ${res.status}`);
+  if(cinemaCheckpoint)await store.setJSON('cinema-seen',cinemaCheckpoint);
   for (const u of updates) await store.setJSON(`film-${u.id}`,{seen:u.seen,policy:u.policy});
   await store.setJSON('receipt',{checkedAt:new Date().toISOString(),emailedAt:new Date().toISOString()});
   return {statusCode:200};

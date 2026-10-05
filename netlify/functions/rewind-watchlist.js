@@ -23,7 +23,11 @@ exports.handler = async event => {
     if (data.enabled && !(process.env.RESEND_API_KEY && process.env.DIGEST_FROM_EMAIL)) return reply(503,{error:'Email service is not configured.'});
     const movies = [...new Map(data.movies.map(m => [m.id,{id:m.id,title:m.title.slice(0,200),alert:preference(m.alert)}])).values()];
     const services = Array.isArray(data.services) ? data.services.filter(s=>typeof s === 'string' && s.length < 60).slice(0,30) : settings.services;
-    const next = {enabled:data.enabled,movies,...(services ? {services} : {}),updatedAt:new Date().toISOString()};
+    if(data.eventAlerts!==undefined&&typeof data.eventAlerts!=='boolean')return reply(400,{error:'Invalid event alert setting.'});
+    if(data.eventFilms!==undefined&&(!Array.isArray(data.eventFilms)||data.eventFilms.length>500||data.eventFilms.some(m=>!Number.isSafeInteger(m.id)||m.id<=0||typeof m.title!=='string')))return reply(400,{error:'Invalid event films.'});
+    if(data.followedEvents!==undefined&&(!Array.isArray(data.followedEvents)||data.followedEvents.length>500||data.followedEvents.some(id=>typeof id!=='string'||id.length>300)))return reply(400,{error:'Invalid followed events.'});
+    const eventFilms=(data.eventFilms||settings.eventFilms||[]).map(m=>({id:m.id,title:m.title.slice(0,200)}));
+    const next = {enabled:data.enabled,movies,eventAlerts:data.eventAlerts??settings.eventAlerts??false,eventFilms,followedEvents:data.followedEvents||settings.followedEvents||[],...(services ? {services} : {}),updatedAt:new Date().toISOString()};
     await store.setJSON('watchlist',next);
     return reply(200,{ok:true,count:movies.length,email:'bmbailey96@gmail.com'});
   } catch (err) { return reply(500,{error:err.message}); }

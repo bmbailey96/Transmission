@@ -6,10 +6,11 @@
   "scripts": {
     "test:scoring": "node test/runScoring.js",
     "test:art": "node test/runArtFetch.js",
-    "test": "node test/v2Logic.js && node test/scoringOutage.js && node test/rewindAlerts.js && node test/rewindWorker.js && node test/rewindPreferences.js"
+    "test": "node test/v2Logic.js && node test/scoringOutage.js && node test/rewindAlerts.js && node test/rewindWorker.js && node test/rewindPreferences.js && node test/rewindCinema.js && node test/rewindCinemaAlerts.js"
   },
   "dependencies": {
     "@netlify/blobs": "10.7.13",
+    "cheerio": "1.0.0",
     "dotenv": "16.6.1"
   },
   "engines": {
