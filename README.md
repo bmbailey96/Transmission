@@ -92,3 +92,6 @@ per film; failed fetches and failed emails do not advance the notification curso
 The first check reports current providers and future dates. US theatrical dates
 are national listings, not proof of local showtimes. Optional `TMDB_API_KEY`
 overrides Rewind's existing public API key.
+
+## Rewind price alerts
+`rewind-prices` serves cached US rental and purchase quotes from JustWatch. Search results are accepted only when their external TMDB ID exactly matches the requested film; only numeric USD prices with HTTPS store links count. Formats stay distinct, failures return an unavailable response, and the six-hour quote check timestamp is retained. The daily Rewind worker uses the same price module/cache. Watchmode remains an optional second quote source. Price digests keep five films per email and honor each film’s rental ceiling; unpriced availability never becomes a price-threshold event.

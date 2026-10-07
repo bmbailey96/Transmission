@@ -4,6 +4,7 @@ const data=new Map([['watchlist',{enabled:true,movies:[{id:1204680,title:'Coyote
 require.cache[netlifyPath]={id:netlifyPath,filename:netlifyPath,loaded:true,exports:{connectLambda(){},getStore(){return {get:async k=>data.get(k),setJSON:async(k,v)=>data.set(k,v)}}}};
 let providers={rent:[{provider_id:10,provider_name:'Amazon Video'}]};let mailCount=0,fail=false,mailFail=false,mails=[];
 global.fetch=async (url,options={})=>{
+ if(String(url).includes('apis.justwatch.com'))return {ok:true,json:async()=>({data:{popularTitles:{edges:[]}}})};
  if(String(url).includes('resend.com')){mailCount++;mails.push(JSON.parse(options.body));return {ok:!mailFail,status:500};}
  if(fail) return {ok:false,status:503};
  return {ok:true,json:async()=>String(url).includes('watch/providers')?{results:{US:providers}}:{results:[]}};

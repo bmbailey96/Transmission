@@ -14,7 +14,7 @@ exports.handler = async event => {
     connectLambda(event);
     const store = getStore({name:'rewind-alerts'});
     const settings = await store.get('watchlist',{type:'json'}) || {enabled:true,movies:[{id:1204680,title:'Coyote vs. Acme'}]};
-    if (event.httpMethod === 'GET') return reply(200,{...settings,email:'bmbailey96@gmail.com',configured:!!(process.env.RESEND_API_KEY && process.env.DIGEST_FROM_EMAIL),pricesConfigured:!!process.env.WATCHMODE_API_KEY});
+    if (event.httpMethod === 'GET') return reply(200,{...settings,email:'bmbailey96@gmail.com',configured:!!(process.env.RESEND_API_KEY && process.env.DIGEST_FROM_EMAIL),pricesConfigured:true,priceSources:['JustWatch US prices',...(process.env.WATCHMODE_API_KEY?['Watchmode']:[])],emailDigestVersion:2});
     if ((event.body || '').length > 100000) return reply(413,{error:'Card is too large.'});
     const data = JSON.parse(event.body);
     if (typeof data.enabled !== 'boolean' || !Array.isArray(data.movies) || data.movies.length > 500) return reply(400,{error:'Invalid card.'});

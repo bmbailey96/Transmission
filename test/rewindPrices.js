@@ -1,0 +1,24 @@
+const assert=require('node:assert/strict');
+const {dollars,extractQuotes,lookupPrices}=require('../lib/rewind/prices');
+const {buildDigest}=require('../lib/rewind/email-digest');
+const quote=(price,format='HD',kind='RENT',currency='USD',provider='Apple TV Store')=>({monetizationType:kind,presentationType:format,retailPrice:price,currency,standardWebURL:'https://tv.apple.com/us/movie/test',package:{clearName:provider}});
+const body=(id,offers)=>({data:{popularTitles:{edges:[{node:{content:{title:'The Thing',externalIds:{tmdbId:String(id)}},offers}}]}}});
+assert.equal(dollars('$3.99'),3.99);assert.equal(dollars('$1,234.99'),1234.99);
+for(const value of [null,'',-1,'Free','From $3.99','€3.99','3,99','US $3.99',Infinity])assert.equal(dollars(value),null);
+const data=body(1091,[quote('$3.99'),quote('$3.99'),quote(null),quote('$1.99','SD'),quote('$4.99','_4K'),quote('$3.99','HD','RENT','EUR'),quote('$14.99','HD','BUY')]);
+assert.deepEqual(extractQuotes(data,1091).map(o=>[o.kind,o.price,o.format]),[['rent',3.99,'HD'],['rent',1.99,'SD'],['rent',4.99,'4K'],['buy',14.99,'HD']]);
+assert.deepEqual(extractQuotes(data,60935),[],'Remake must never inherit the original film price');
+const ambiguous=body(1091,[]);ambiguous.data.popularTitles.edges.push(ambiguous.data.popularTitles.edges[0]);assert.deepEqual(extractQuotes(ambiguous,1091),[]);
+assert.throws(()=>extractQuotes({errors:[{message:'unavailable'}]},1091));
+const events=extractQuotes(data,1091).filter(o=>o.kind==='rent').map(o=>({...o,key:'quote:rent:'+o.format+':'+o.price}));
+let digest=buildDigest([{movie:{id:1091,title:'The Thing'},events:[{kind:'rent',key:'rent:1'}],currentEvents:events}]);
+assert.match(digest.html,/Rent for \$3.99 on Apple TV \(HD\)/);assert.doesNotMatch(digest.html,/\$1.99/,'SD bargain must not be the HD headline');
+const threshold=[{kind:'rent',provider:'Apple TV Store',price:19.99,format:'HD',key:'quote:rent:apple:19.99'},{kind:'rent',provider:'YouTube',price:4.99,format:'HD',key:'quote:rent:youtube:4.99'}];
+digest=buildDigest([{movie:{id:1,title:'Film',alert:{mode:'rental',maxPrice:7.99}},events:[threshold[1]],currentEvents:threshold}]);assert.match(digest.html,/\$4.99/);assert.doesNotMatch(digest.html,/\$19.99/);
+let calls=0,failed=false;const cache=new Map();global.fetch=async()=>{calls++;if(failed)return {ok:false};return {ok:true,json:async()=>body(11,[quote('$5.99')])};};
+(async()=>{
+ const store={get:async key=>cache.get(key),setJSON:async(key,value)=>cache.set(key,value)};
+ const first=await lookupPrices(11,{title:'Film',store});const second=await lookupPrices(11,{title:'Film',store});assert.equal(calls,1);assert.equal(first.checkedAt,second.checkedAt);
+ failed=true;await assert.rejects(lookupPrices(12,{title:'Another',store}));assert.equal(cache.has('quotes-12'),false);
+ console.log('US prices: exact ID match, format/currency validation, cache timestamps, failures, and threshold-safe email prices passed');
+})().catch(e=>{console.error(e);process.exitCode=1});

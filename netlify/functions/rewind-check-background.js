@@ -4,6 +4,7 @@ const {meaningfulEvents,buildDigest}=require('../../lib/rewind/email-digest');
 exports.handler = async event => {
   connectLambda(event);
   const store = getStore({name:'rewind-alerts'});
+  const priceStore=getStore({name:'rewind-prices'});
   let settings = await store.get('watchlist',{type:'json'});
   if (!settings) {
     settings = {enabled:true,movies:[{id:1204680,title:'Coyote vs. Acme'}]};
@@ -14,7 +15,7 @@ exports.handler = async event => {
   const updates = [];
   for (const movie of settings.movies) {
     try {
-      const events = await movieEvents(movie.id,settings.services);
+      const events = await movieEvents(movie.id,settings.services,{title:movie.title,store:priceStore});
       const prior = await store.get(`film-${movie.id}`,{type:'json'});
       // First check reports current providers and future dates. Failed lookups never
       // erase previous observations or manufacture availability changes.
@@ -25,7 +26,7 @@ exports.handler = async event => {
       const pending=prior&&!policyChanged?pendingEvents(eligible,prior.seen):initialEvents;
       const fresh=meaningfulEvents(pending,policyChanged?[]:prior?.seen||[],events);
       if (!fresh.length) {await store.setJSON(`film-${movie.id}`,{seen:[...new Set([...(policyChanged?[]:prior?.seen||[]),...eligible.map(e=>e.key)])],policy});continue;}
-      if (fresh.length) { changed.push({movie,events:fresh}); updates.push({id:movie.id,policy,seen:[...new Set([...(policyChanged?[]:prior?.seen || []),...eligible.map(e=>e.key)])]}); }
+      if (fresh.length) { changed.push({movie,events:fresh,currentEvents:events}); updates.push({id:movie.id,policy,seen:[...new Set([...(policyChanged?[]:prior?.seen || []),...eligible.map(e=>e.key)])]}); }
     } catch (err) { console.error(`Rewind film ${movie.id}: ${err.message}`); }
   }
   let cinemaCheckpoint=null;

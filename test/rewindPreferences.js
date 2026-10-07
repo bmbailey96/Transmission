@@ -3,6 +3,7 @@ const path=require.resolve('@netlify/blobs');const state=new Map();
 require.cache[path]={id:path,filename:path,loaded:true,exports:{connectLambda(){},getStore(){return {get:async key=>state.get(key),setJSON:async(key,value)=>state.set(key,value)}}}};
 let providers={rent:[{provider_id:10,provider_name:'Amazon Video'}]},amount=19.99,mails=[];
 global.fetch=async(url,options={})=>{
+ if(String(url).includes('apis.justwatch.com'))return {ok:true,json:async()=>({data:{popularTitles:{edges:[]}}})};
  const u=String(url);
  if(u.includes('resend.com')){mails.push(JSON.parse(options.body));return {ok:true};}
  if(u.includes('watch/providers'))return {ok:true,json:async()=>({results:{US:providers}})};
