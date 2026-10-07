@@ -24,3 +24,12 @@ assert.equal(eligibleEvents(options,{mode:'rental',maxPrice:6}).length,0);
 assert.equal(eligibleEvents([{kind:'rent',price:null},{kind:'rent',price:19.99},{kind:'buy',price:3.99},{kind:'rent',price:5.99}],{mode:'rental',maxPrice:5.99}).length,1);
 const announced=announcementEvents(1290418,['Shudder'],'2026-10-05');assert.equal(announced[0].date,'2026-10-23');assert.equal(eligibleEvents(announced,{mode:'mine'}).length,1);assert.equal(eligibleEvents(announcementEvents(1290418,[],'2026-10-05'),{mode:'mine'}).length,0);
 console.log('Per-film alert modes: included/free only, quoted rental thresholds, source announcements passed');
+
+const {meaningfulEvents,buildDigest}=require('../lib/rewind/email-digest');
+const current=eventsFor({flatrate:[max],rent:[netflix],buy:[netflix]},[{type:4,release_date:'2026-10-09'}],'2026-10-07');
+assert.ok(!meaningfulEvents(current,[],current).some(e=>e.kind==='digital'),'Actual offers suppress conflicting digital dates');
+const digest=buildDigest([{movie:{id:1,title:'Film <One>'},events:meaningfulEvents(current,[],current)}]);
+assert.match(digest.html,/Film &lt;One&gt;/);assert.match(digest.html,/Included with HBO Max/);assert.equal((digest.html.match(/<li>/g)||[]).length,1);
+assert.doesNotMatch(digest.html,/Rent|Buy|2026-10-09/);
+assert.equal(meaningfulEvents([{key:'subscription:1',kind:'subscription',provider:'Shudder Amazon Channel',included:false}]).length,0);
+console.log('Compact digest: useful changes, one line per film, strongest option and conflicting date suppression passed');
