@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict'),H=require('../lib/rewind/horizon');
+const at=Date.now(),page='<h1>Chronovisor</h1><p>Saturday, 10/24 at 5:30pm</p><p>Sunday, 10/25 at 5:15pm</p>';
+assert.deepEqual(H.parseMontana(page,at).map(r=>r.date),['2026-10-24','2026-10-25']);
+assert.equal(H.parseMontana('<h1>Different Film</h1><p>Saturday, 10/24 at 5:30pm</p>',at).length,0);
+assert.equal(H.parseMontana('<h1>Chronovisor</h1><p>2027 MTFF</p>'+page,at).length,0,'An old schedule cannot roll forward into another year');
+assert.equal(H.parseMontana(page.replace('10/24','13/24').replace('10/25','10/99'),at).length,0);
+const rows=H.parseDistributor('<a href="https://grasshopperfilm.com/film/test/"><h6>Test Film</h6><p>Opens November 6</p></a>',at);assert.equal(rows[0].sourceStatus,'announced');assert.equal(rows[0].release_date,undefined,'Unscoped marketing date never becomes a US date');assert.throws(()=>H.parseDistributor('<p>unreadable layout</p>'));
+const feed={checkedAt:at,items:[{id:1,title:'Test Film',sourceStatus:'digital',sourceNote:'Distributor lists a digital release',sourceURL:rows[0].sourceURL,screenings:H.parseMontana(page,at)}]};
+assert.equal(H.filmEvents(feed,1,'2026-10-09').length,3);assert.equal(H.filmEvents({...feed,stale:true},1,'2026-10-09').length,0);assert.equal(H.filmEvents({...feed,checkedAt:at-8*86400000},1,'2026-10-09').length,0);assert.equal(H.filmEvents(feed,2,'2026-10-09').length,0);
+console.log('Release horizon: exact sources, fixed festival edition, date validation, unscoped date exclusions, fresh tracked-film news and stale suppression passed');

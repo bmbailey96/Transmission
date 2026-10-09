@@ -11,11 +11,12 @@ exports.handler = async event => {
     await store.setJSON('watchlist',settings);
   }
   if (!settings?.enabled) return {statusCode:200};
+  let horizon;try{horizon=await getStore({name:'rewind-horizon'}).get('feed',{type:'json'})||require('../../lib/rewind/horizon-snapshot.json');}catch{}
   const changed = [];
   const updates = [];
   for (const movie of settings.movies) {
     try {
-      const events = await movieEvents(movie.id,settings.services,{title:movie.title,store:priceStore});
+      const events = [...await movieEvents(movie.id,settings.services,{title:movie.title,store:priceStore}),...require('../../lib/rewind/horizon').filmEvents(horizon,movie.id,new Date().toLocaleDateString('en-CA',{timeZone:'America/Denver'}))];
       const prior = await store.get(`film-${movie.id}`,{type:'json'});
       // First check reports current providers and future dates. Failed lookups never
       // erase previous observations or manufacture availability changes.

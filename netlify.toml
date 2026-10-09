@@ -28,3 +28,7 @@
 # Read-only screening sources, refreshed without sending emails.
 [functions."rewind-cinema-refresh"]
   schedule = "0 */6 * * *"
+
+# Public distributor and regional-festival listings, before the daily film check.
+[functions."rewind-horizon-refresh"]
+  schedule = "10 13 * * *"

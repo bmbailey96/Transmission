@@ -1,0 +1,2 @@
+const {connectLambda,getStore}=require('@netlify/blobs');const {refreshHorizon}=require('../../lib/rewind/horizon');
+exports.handler=async event=>{connectLambda(event);const store=getStore({name:'rewind-horizon'});const previous=await store.get('feed',{type:'json'})||require('../../lib/rewind/horizon-snapshot.json');if(Date.now()-(previous.generatedAt||0)<3*60000)return {statusCode:200};await store.setJSON('feed',await refreshHorizon(previous));return {statusCode:200};};

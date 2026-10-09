@@ -1,0 +1,703 @@
+{
+  "items": [
+    {
+      "title": "zi",
+      "source": "Grasshopper Film",
+      "sourceURL": "https://grasshopperfilm.com/film/zi/",
+      "sourceStatus": "announced",
+      "sourceNote": "Distributor lists an upcoming theatrical release",
+      "checkedAt": 1791564835590,
+      "screenings": []
+    },
+    {
+      "title": "Chronovisor",
+      "source": "Grasshopper Film",
+      "sourceURL": "https://grasshopperfilm.com/film/chronovisor/",
+      "sourceStatus": "limited",
+      "sourceNote": "Distributor lists theatrical screenings",
+      "checkedAt": 1791564835590,
+      "screenings": [
+        {
+          "date": "2026-10-24",
+          "time": "5:30pm",
+          "location": "Missoula, MT",
+          "label": "Montana Film Festival",
+          "scope": "regional",
+          "sourceURL": "https://www.montanafilmfestival.org/films/feature/chronovisor/",
+          "checkedAt": 1791568629432
+        },
+        {
+          "date": "2026-10-25",
+          "time": "5:15pm",
+          "location": "Missoula, MT",
+          "label": "Montana Film Festival",
+          "scope": "regional",
+          "sourceURL": "https://www.montanafilmfestival.org/films/feature/chronovisor/",
+          "checkedAt": 1791568629432
+        }
+      ],
+      "id": 1599181,
+      "release_date": "2026-09-04",
+      "poster_path": "/AngfVgLk5EngnbuFpISjvFJkYBz.jpg",
+      "runtime": 99,
+      "overview": "A French academic is seduced into a world of untold histories in her scholarly quest to uncover the mystery of a history-capturing camera-like machine created by clandestine Benedictine monks. An academic-noir, armchair mystery in the lineage of Jorge Luis Borges and Umberto Eco.",
+      "director": "Kevin Walker, Jack Auen",
+      "genre_ids": [
+        9648,
+        878,
+        27
+      ],
+      "details": {
+        "id": 1599181,
+        "runtime": 99,
+        "release_dates": {
+          "results": [
+            {
+              "iso_3166_1": "AU",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Sydney Film Festival",
+                  "release_date": "2026-06-08T00:00:00.000Z",
+                  "type": 1
+                },
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Melbourne International Film Festival",
+                  "release_date": "2026-08-07T00:00:00.000Z",
+                  "type": 1
+                },
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Adelaide Film Festival",
+                  "release_date": "2026-10-24T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "BE",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Film Fest Gent",
+                  "release_date": "2026-10-08T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "CA",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Festival du Nouveau Cinéma",
+                  "release_date": "2026-10-09T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "CH",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Visions du Réel",
+                  "release_date": "2026-04-23T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "GB",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "\tBFI London Film Festival",
+                  "release_date": "2026-10-09T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "HR",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Subversive Festival",
+                  "release_date": "2026-05-19T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "HU",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Budapest International Film Festival",
+                  "release_date": "2026-10-28T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "IS",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Reykjavik International Film Festival",
+                  "release_date": "2026-09-27T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "KR",
+              "release_dates": [
+                {
+                  "certification": "12",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Jeonju International Film Festival",
+                  "release_date": "2026-05-02T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "MX",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Guanajuato International Film Festival",
+                  "release_date": "2026-07-25T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "NL",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "International Film Festival Rotterdam",
+                  "release_date": "2026-01-30T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "NO",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Bergen International Film Festival",
+                  "release_date": "2026-10-16T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "NZ",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "New Zealand International Film Festival",
+                  "release_date": "2026-08-02T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "PL",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "TAURON New Horizons International Film Festival",
+                  "release_date": "2026-07-25T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "US",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "New Directors/New Films",
+                  "release_date": "2026-04-10T00:00:00.000Z",
+                  "type": 1
+                },
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Oak Cliff Film Festival",
+                  "release_date": "2026-08-02T00:00:00.000Z",
+                  "type": 1
+                },
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Los Angeles Festival of Movies",
+                  "release_date": "2026-04-12T00:00:00.000Z",
+                  "type": 1
+                },
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Montgomery Film Festival",
+                  "release_date": "2026-08-07T00:00:00.000Z",
+                  "type": 1
+                },
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Montana Film Festival",
+                  "release_date": "2026-10-24T00:00:00.000Z",
+                  "type": 1
+                },
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Refocus Film Festival",
+                  "release_date": "2026-10-23T00:00:00.000Z",
+                  "type": 1
+                },
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "West Virginia International Film Festival",
+                  "release_date": "2026-11-14T00:00:00.000Z",
+                  "type": 1
+                },
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "",
+                  "release_date": "2026-09-04T00:00:00.000Z",
+                  "type": 2
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "title": "Forastera",
+      "source": "Grasshopper Film",
+      "sourceURL": "https://grasshopperfilm.com/film/forastera/",
+      "sourceStatus": "limited",
+      "sourceNote": "Distributor lists theatrical screenings",
+      "checkedAt": 1791564835590,
+      "screenings": [],
+      "id": 1274757,
+      "release_date": "2026-05-29",
+      "poster_path": "/fl7Bl7KSHjN5IzzhGrvWJBsJ3SS.jpg",
+      "runtime": 97,
+      "overview": "Cata will see her summer vacation disrupted by the absurd and sudden death of her grandmother, which only she witnesses. Her grief shifts when she casually turns to play pretend, transforming into the deceased. What begins with a game of dress-up will blur the lines of reality and family roles.",
+      "director": "Lucía Aleñar Iglesias",
+      "genre_ids": [
+        18
+      ],
+      "details": {
+        "id": 1274757,
+        "runtime": 97,
+        "release_dates": {
+          "results": [
+            {
+              "iso_3166_1": "CA",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Toronto International Film Festival",
+                  "release_date": "2025-09-08T00:00:00.000Z",
+                  "type": 1
+                },
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "International Film Festival of Ottawa",
+                  "release_date": "2026-03-21T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "EE",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Tallinn Black Nights Film Festival",
+                  "release_date": "2025-11-08T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "ES",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Valladolid International Film Festival ",
+                  "release_date": "2025-10-28T00:00:00.000Z",
+                  "type": 1
+                },
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Marere Film Fest",
+                  "release_date": "2026-03-21T00:00:00.000Z",
+                  "type": 1
+                },
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "",
+                  "release_date": "2026-09-11T00:00:00.000Z",
+                  "type": 3
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "MA",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Marrakech International Film Festival ",
+                  "release_date": "2025-12-05T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "SE",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Stockholm International Film Festival",
+                  "release_date": "2025-11-05T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "TW",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Taipei Film Festival",
+                  "release_date": "2026-06-27T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "US",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "",
+                  "release_date": "2026-05-29T00:00:00.000Z",
+                  "type": 2
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "title": "Mare’s Nest",
+      "source": "Grasshopper Film",
+      "sourceURL": "https://grasshopperfilm.com/film/mares-nest/",
+      "sourceStatus": "limited",
+      "sourceNote": "Distributor lists theatrical screenings",
+      "checkedAt": 1791564835590,
+      "screenings": []
+    },
+    {
+      "title": "Wayumi",
+      "source": "Grasshopper Film",
+      "sourceURL": "https://grasshopperfilm.com/film/wayumi/",
+      "sourceStatus": "digital",
+      "sourceNote": "Distributor lists a digital release",
+      "checkedAt": 1791564835590,
+      "screenings": [],
+      "id": 1567509,
+      "release_date": "2025-11-15",
+      "poster_path": "/oe1JCw7REMyQ3QNaTjFs5jqcsHP.jpg",
+      "runtime": null,
+      "overview": "Hundreds of hours of footage are woven into a narrative that chronicles David Good and his indigenous mother, Yarima, as they journey from the Amazon rainforest to reunite their family, separated without contact for 30 years.",
+      "director": "Andrew Balcof",
+      "genre_ids": [
+        99
+      ],
+      "details": {
+        "id": 1567509,
+        "runtime": 0,
+        "release_dates": {
+          "results": [
+            {
+              "iso_3166_1": "US",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "",
+                  "release_date": "2025-11-15T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "title": "Coroner to the Stars",
+      "source": "Grasshopper Film",
+      "sourceURL": "https://grasshopperfilm.com/film/coroner-to-the-stars/",
+      "sourceStatus": "digital",
+      "sourceNote": "Distributor lists a digital release",
+      "checkedAt": 1791564835590,
+      "screenings": [],
+      "id": 1405751,
+      "release_date": "2025-02-20",
+      "poster_path": "/qjlWRu9q5sWalcSsESVRVbE82ys.jpg",
+      "runtime": 85,
+      "overview": "Coroner to the Stars chronicles the extraordinary journey of Dr. Thomas Noguchi, the former Los Angeles County Chief Medical Examiner-Coroner whose groundbreaking autopsies forever shaped American culture. From Marilyn Monroe and Robert Kennedy to Sharon Tate and Natalie Wood, Noguchi’s outspoken expertise pushed forensic science into the spotlight—even as Hollywood elites and political adversaries sought to silence him. A Japanese immigrant who unwittingly rose to fame in a city driven by stardom, Noguchi’s fearless pursuit of truth often placed him in the crosshairs of controversy.",
+      "director": "Ben Hethcoat, Keita Ideno",
+      "genre_ids": [
+        99
+      ],
+      "details": {
+        "id": 1405751,
+        "runtime": 85,
+        "release_dates": {
+          "results": [
+            {
+              "iso_3166_1": "US",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "",
+                  "release_date": "2025-02-20T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "title": "River of Grass",
+      "source": "Grasshopper Film",
+      "sourceURL": "https://grasshopperfilm.com/film/river-of-grass/",
+      "sourceStatus": "digital",
+      "sourceNote": "Distributor lists a digital release",
+      "checkedAt": 1791564835590,
+      "screenings": []
+    },
+    {
+      "title": "Maintenance Artist",
+      "source": "Grasshopper Film",
+      "sourceURL": "https://grasshopperfilm.com/film/maintenance-artist/",
+      "sourceStatus": "digital",
+      "sourceNote": "Distributor lists a digital release",
+      "checkedAt": 1791564835590,
+      "screenings": [],
+      "id": 1465978,
+      "release_date": "2025-06-08",
+      "poster_path": "/kardTV8rIJz1BaCKmlQUrUcPjkg.jpg",
+      "runtime": 90,
+      "overview": "What happens when art meets trash? Maintenance Artist profiles pioneering public artist Mierle Laderman Ukeles — the first artist-in-residence at NYC’s Department of Sanitation.",
+      "director": "Toby Perl Freilich",
+      "genre_ids": [
+        99
+      ],
+      "details": {
+        "id": 1465978,
+        "runtime": 90,
+        "release_dates": {
+          "results": [
+            {
+              "iso_3166_1": "US",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Tribeca Film Festival",
+                  "release_date": "2025-06-08T00:00:00.000Z",
+                  "type": 1
+                },
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Heartland International Film Festival",
+                  "release_date": "2025-10-16T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "title": "You Need This",
+      "source": "Grasshopper Film",
+      "sourceURL": "https://grasshopperfilm.com/film/you-need-this/",
+      "sourceStatus": "digital",
+      "sourceNote": "Distributor lists a digital release",
+      "checkedAt": 1791564835590,
+      "screenings": [],
+      "id": 1442327,
+      "release_date": "2025-03-23",
+      "poster_path": "/prdrTwiujyyR41tWYuj1PkXIsEB.jpg",
+      "runtime": 84,
+      "overview": "A revealing film about the vicious cycle of consumerism and the destructive power of hyper-capitalism. Can we break the grip of the system before it is too late?",
+      "director": "Ryan Lough",
+      "genre_ids": [
+        99
+      ],
+      "details": {
+        "id": 1442327,
+        "runtime": 84,
+        "release_dates": {
+          "results": [
+            {
+              "iso_3166_1": "DK",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "CPH:DOX",
+                  "release_date": "2025-03-23T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "KR",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "Seoul International Eco Film Festival",
+                  "release_date": "2026-06-05T00:00:00.000Z",
+                  "type": 4
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "NO",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "",
+                  "release_date": "2025-10-17T00:00:00.000Z",
+                  "type": 1
+                }
+              ]
+            },
+            {
+              "iso_3166_1": "US",
+              "release_dates": [
+                {
+                  "certification": "",
+                  "descriptors": [],
+                  "iso_639_1": "",
+                  "note": "",
+                  "release_date": "2026-04-07T00:00:00.000Z",
+                  "type": 4
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "title": "Backstage",
+      "source": "Grasshopper Film",
+      "sourceURL": "https://grasshopperfilm.com/film/backstage/",
+      "sourceStatus": "digital",
+      "sourceNote": "Distributor lists a digital release",
+      "checkedAt": 1791564835590,
+      "screenings": []
+    }
+  ],
+  "checkedAt": 1791564835590,
+  "generatedAt": 1791564835590,
+  "stale": false,
+  "sourceURL": "https://grasshopperfilm.com/",
+  "festivalCheckedAt": 1791564835590
+}
