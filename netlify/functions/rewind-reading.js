@@ -10,16 +10,16 @@ exports.handler=async event=>{
  const reply=(statusCode,body)=>({statusCode,headers,body:JSON.stringify(body)});
  if(event.httpMethod==='OPTIONS')return reply(204,{});if(event.httpMethod!=='POST')return reply(405,{});
  let id;try{id=JSON.parse(event.body||'{}').id;}catch{return reply(400,{error:'Film ID required'});}if(!Number.isInteger(id)||id<=0)return reply(400,{error:'Film ID required'});
- if(!process.env.ANTHROPIC_API_KEY)return reply(503,{error:'Reading unavailable'});
- try{
+ if(!process.env.ANTHROPIC_API_KEY)return reply(503,{error:'Reading unavailable',code:'writing_not_configured'});
+ let stage='cache';try{
   connectLambda(event);const store=getStore({name:'rewind-readings'}),at=Date.now(),day=new Date(at).toLocaleDateString('en-CA',{timeZone:'America/Denver'}),key='film-'+id+'-'+day;
   const cached=await store.get(key,{type:'json'});if(cached&&at-cached.checkedAt<6*3600000)return reply(200,cached);
   const usage=await store.get('usage-'+day,{type:'json'})||{count:0};if(usage.count>=40)return reply(429,{error:'Reading unavailable'});
-  const tmdb=new URL('https://api.themoviedb.org/3/movie/'+id);tmdb.searchParams.set('api_key',process.env.TMDB_API_KEY||require('../../lib/rewind/catalog-key.json').key);tmdb.searchParams.set('append_to_response','credits,keywords');
+  stage='catalog';const tmdb=new URL('https://api.themoviedb.org/3/movie/'+id);tmdb.searchParams.set('api_key',process.env.TMDB_API_KEY||require('../../lib/rewind/catalog-key.json').key);tmdb.searchParams.set('append_to_response','credits,keywords');
   const [catalog,contextResult]=await Promise.all([fetch(tmdb,{signal:AbortSignal.timeout(8000)}).then(async r=>{if(!r.ok)throw Error('Film lookup unavailable');return r.json();}),conditions({httpMethod:'GET'})]);
   if(catalog.id!==id)throw Error('Wrong catalog film');let context;try{const c=JSON.parse(contextResult.body);context={location:c.location,checkedAt:c.checkedAt,current:c.weather?.current||null,day:c.weather?.daily?.time?.[0]||null};}catch{context=null;}
   await store.setJSON('usage-'+day,{count:usage.count+1});
-  const response=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:AbortSignal.timeout(14000),headers:{'Content-Type':'application/json','x-api-key':process.env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:450,system:SYSTEM,messages:[{role:'user',content:JSON.stringify({viewer:profile.profile,film:filmFacts(catalog),conditions:context})}]})});
-  if(!response.ok)throw Error('Reading service unavailable');const result=await response.json(),raw=(result.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').replace(/^```(?:json)?\s*|\s*```$/g,'');const reading={id,...cleanReading(JSON.parse(raw)),checkedAt:at};await store.setJSON(key,reading);return reply(200,reading);
- }catch{return reply(503,{error:'Reading unavailable'});}
+  stage='writing_service';const response=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:AbortSignal.timeout(14000),headers:{'Content-Type':'application/json','x-api-key':process.env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:450,system:SYSTEM,messages:[{role:'user',content:JSON.stringify({viewer:profile.profile,film:filmFacts(catalog),conditions:context})}]})});
+  if(!response.ok){console.warn('Oracle writing service status',response.status);throw Error('Reading service unavailable');}stage='reading_format';const result=await response.json(),raw=(result.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').replace(/^```(?:json)?\s*|\s*```$/g,'');const reading={id,...cleanReading(JSON.parse(raw)),checkedAt:at};await store.setJSON(key,reading);return reply(200,reading);
+ }catch{return reply(503,{error:'Reading unavailable',code:stage});}
 };
