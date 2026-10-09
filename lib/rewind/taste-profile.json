@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "source": "Your STATIC taste profile",
+  "profile": "My taste leans heavily toward films that feel authored, obsessive, atmospheric, emotionally sincere, or culturally strange. I care deeply about who wrote or directed a movie and often follow filmmakers, recurring collaborators, cinematographers, composers, and production histories more than genres themselves. Strong authorial voice matters to me far more than polish or consensus acclaim. I usually prefer ambitious swings, fascinating failures, and emotionally raw filmmaking over safe competence.\n\nI watch a large amount of horror, thrillers, surreal dramas, cult cinema, outsider films, experimental work, internet-adjacent media, and low-budget oddities. I'm especially drawn to: analog horror, fake documentaries, found footage, liminal-space media, internet archaeology, cursed/haunted aesthetics, psychological horror, folk horror, cosmic dread, suburban unease, obsession spirals, memory decay, awkward masculinity, lonely or emotionally destabilized characters, movies that feel spiritually \"off.\"\n\nI love films that balance sincerity with absurdity. A movie can be devastating, grotesque, funny, embarrassing, and beautiful simultaneously. I'm very receptive to uncomfortable comedy, tonal whiplash, dream logic, fragmented storytelling, deadpan surrealism, and movies that feel like they shouldn't exist. I value atmosphere, emotional residue, texture, commitment, and memorable imagery more than tight plotting or technical perfection.\n\nI have a strong affection for: cult films, regional filmmaking, microbudget horror, VHS/DVD-era weirdness, \"who greenlit this?\" cinema, accidental masterpieces, internet rabbit holes, abandoned aesthetics, fake PSAs, educational tapes, outsider art, emotionally earnest genre films, movies with one unforgettable scene surrounded by chaos.\n\nI don't separate \"good\" and \"bad\" movies traditionally. A technically messy film with personality and conviction will usually interest me more than a polished franchise movie designed by committee.\n\nI tend to dislike: overly sanitized blockbusters, irony-poisoned writing, algorithmic prestige bait, emotionally empty spectacle, horror that's only lore or aesthetics, movies that confuse ambiguity with depth, corporate-feeling filmmaking.\n\nCRITIC ALIGNMENT: Little White Lies, Reverse Shot, Slant Magazine, Screen Slate, MUBI Notebook, The Film Stage, Paste Magazine (film), Bloody Disgusting (horror discovery), selective writers at RogerEbert.com, IndieWire / David Ehrlich.\nNOT: Collider, IGN, ScreenRant, prestige-safe critics.",
+  "interests": [
+    "analog horror",
+    "fake documentaries",
+    "found footage",
+    "liminal spaces",
+    "internet archaeology",
+    "psychological horror",
+    "folk horror",
+    "cosmic dread",
+    "memory decay",
+    "deadpan surrealism",
+    "experimental film",
+    "microbudget horror",
+    "regional filmmaking",
+    "outsider art"
+  ],
+  "avoid": [
+    "sanitized blockbusters",
+    "emotionally empty spectacle",
+    "corporate filmmaking"
+  ]
+}
