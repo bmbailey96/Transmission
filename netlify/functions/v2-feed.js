@@ -1,5 +1,6 @@
 const { connectLambda } = require('@netlify/blobs');
 const { getState, allReleases } = require('../../lib/v2/store');
+const {editorial}=require('../../lib/v2/editorial');
 const curated = require('../../data/curated2026');
 
 function canonicalize(releases) {
@@ -25,13 +26,18 @@ exports.handler = async function (event) {
       if (a.lifecycle === 'upcoming') return (a.releaseDate || '9999').localeCompare(b.releaseDate || '9999');
       return (b.releaseDate || '').localeCompare(a.releaseDate || '');
     });
+    const recentHeadlines=[];
+    const edited=releases.map(r=>{const note=editorial(r,{avoid:recentHeadlines.slice(-2)});recentHeadlines.push(note.headline);return {...r,...note,standoutTracks:r.standoutTracks||[],archivedAiScore:r.archivedAiScore??r.score};});
     return {
       statusCode: 200,
       headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
       body: JSON.stringify({
         version: 2,
         curated,
-        releases,
+        releases: edited,
+        scoringMode:"rules-v1",
+        reviewCount:(state.candidateInbox||[]).length,
+        reviewCandidates:(state.candidateInbox||[]).slice(-10).reverse(),
         lastRun: state.lastRun,
         recentEvents: (state.events || []).slice(-12).reverse(),
       }),

@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict');
+const {editorial,extractWithoutAI}=require('../lib/v2/editorial');
+const r={artist:'Fixture',albumTitle:'Record',lifecycle:'upcoming',releaseDate:'2026-11-01',sourceFeed:'Fixture feed'};
+const blank={stats:null,picks:[],anticipated:[],toHear:[]};
+assert.equal(editorial(r,blank).attentionBand,'explore');assert.equal(editorial(r,blank).score,null);
+assert.equal(editorial(r,{...blank,stats:{totalListens:40,last12moListens:0}}).attentionBand,'returning');
+assert.equal(editorial(r,{...blank,anticipated:[{artist:'Fixture'}]}).attentionBand,'interest');
+assert.equal(editorial(r,{...blank,picks:[{artist:'Fixture',title:'Record'}]}).attentionBand,'direct');
+const item={title:'Fixture Announces New Album “Record”',content:'The record arrives on November 1, 2026.',sourceFeed:'Fixture feed'};
+assert.equal(extractWithoutAI(item).albumTitle,'Record');assert.equal(extractWithoutAI(item).releaseDate,'2026-11-01');
+assert.equal(extractWithoutAI({...item,content:'Article published November 1, 2026.'}).releaseDate,null);
+assert.equal(extractWithoutAI({title:'Fixture announces anniversary reissue of Record'}).isAlbumAnnouncement,false);
+assert.equal(extractWithoutAI({title:'Fixture announces new album without a clear title'}).needsReview,true);
+const art=require('../lib/art/fetchArt');art.fetchArt=async()=>({url:'https://example.com/art.jpg'});
+const engine=require('../lib/v2/engine');
+global.fetch=async()=>{throw Error('No external AI request is permitted in this test');};
+(async()=>{const created=await engine.scoreNew({artist:'Fixture',albumTitle:'Record',releaseDate:'2026-11-01'},'2026-10-11');assert.equal(created.scoringMethod,'rules-v1');assert.equal(created.spotify.status,'not_needed');assert.equal(engine.spotifyEligible({...r,lifecycle:'released',scoringMethod:'rules-v1',score:100}),false);console.log('Credit-free extraction, positive-only ranking and honest exploration checks passed');})().catch(e=>{console.error(e);process.exitCode=1});

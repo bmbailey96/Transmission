@@ -13,9 +13,9 @@ A release moves in one direction:
 
 `discovered -> upcoming -> released -> Spotify terminal state`
 
-Upcoming releases are scored once from confirmed pre-release evidence.
-When the release date arrives, the album is scored once again using real released-album evidence.
-There is no score jitter, score-rescore loop, or second AI grading the first AI's number.
+Discovery, classification and writing use rules-v1 with no AI calls. Conservative headline extraction identifies supported album announcements; ambiguous announcements enter a bounded review inbox. Structured release listings fill coverage gaps.
+Attention bands describe recorded evidence: direct pick, returning artist, stated curiosity, or exploration. They are not probabilities. Quiet listening periods are not negative evidence. Old AI estimates remain archived and are not displayed as current judgments.
+Dates advance independently of taste judgments. No new rules-only release automatically enters Spotify under the old prediction threshold. Existing previously scored queue entries retain their original handling.
 
 ## Spotify
 Spotify is a side effect, not proof that release processing succeeded.
