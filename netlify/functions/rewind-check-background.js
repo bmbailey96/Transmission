@@ -10,7 +10,9 @@ exports.handler = async event => {
     settings = {enabled:true,movies:[{id:1204680,title:'Coyote vs. Acme'}]};
     await store.setJSON('watchlist',settings);
   }
-  if (!settings?.enabled) return {statusCode:200};
+  // Legacy subscriptions include the entire watchlist. Wait for the scoped card
+  // instead of sending unrelated films while a device upgrades its settings.
+  if (!settings?.enabled||settings.scope!=='release-watch') return {statusCode:200};
   let horizon;try{horizon=await getStore({name:'rewind-horizon'}).get('feed',{type:'json'})||require('../../lib/rewind/horizon-snapshot.json');}catch{}
   const changed = [];
   const updates = [];
