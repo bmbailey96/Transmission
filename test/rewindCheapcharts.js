@@ -1,0 +1,24 @@
+const assert=require('node:assert/strict');
+const {extractPrevious,lookupEarlierPrices}=require('../lib/rewind/cheapcharts');
+const imdb='tt26581740',row={imdbId:imdb,currency:'USD',price:14.99,priceBefore:7.99,has4K:true,cheapChartsProductPageUrl:'https://www.cheapcharts.com/us/itunes/movies/1830433930?utm_source=api2-gptapi'};
+const body=r=>({status:'success',results:{buymovies:r}});
+assert.equal(extractPrevious(body([row]),imdb,'itunes').previousPrice,7.99);
+assert.equal(extractPrevious(body([row]),imdb,'itunes').kind,'buy');
+assert.equal(extractPrevious(body([row]),imdb,'itunes').previousAt,null);
+assert.equal(extractPrevious(body([row]),imdb,'itunes').format,null,'4K availability does not identify the price format');
+for(const override of [{imdbId:'tt1234567'},{currency:'EUR'},{isMovieBundle:true},{cheapChartsProductPageUrl:'https://evil.test/us/itunes/movies/1'},{cheapChartsProductPageUrl:'https://www.cheapcharts.com/gb/itunes/movies/1'},{price:null}])assert.equal(extractPrevious(body([{...row,...override}]),imdb,'itunes'),null);
+assert.equal(extractPrevious(body([row,row]),imdb,'itunes'),null,'Ambiguous editions are not merged');
+assert.equal(extractPrevious(body([{...row,priceBefore:undefined}]),imdb,'itunes').previousPrice,null);
+assert.equal(extractPrevious(body([{...row,priceBefore:14.99}]),imdb,'itunes').previousPrice,null);
+assert.throws(()=>extractPrevious({status:'failed'},imdb,'itunes'));
+(async()=>{
+ let calls=0;const cache=new Map(),store={get:async key=>cache.get(key),setJSON:async(key,value)=>cache.set(key,value)};
+ const fetcher=async url=>{calls++;if(url.includes('themoviedb'))return {ok:true,json:async()=>({id:1078605,imdb_id:imdb})};const name=new URL(url).searchParams.get('store');return {ok:true,json:async()=>body([{...row,cheapChartsProductPageUrl:'https://www.cheapcharts.com/us/'+name+'/movies/1'}])};};
+ const [a,b]=await Promise.all([lookupEarlierPrices(1078605,{store,fetcher}),lookupEarlierPrices(1078605,{store,fetcher})]);
+ assert.equal(calls,4,'One identity request and three store requests, coalesced');assert.equal(a,b);assert.equal(a.entries.length,3);
+ await lookupEarlierPrices(1078605,{store,fetcher});assert.equal(calls,4,'Warm cache makes no requests');
+ const noId=async()=>({ok:true,json:async()=>({id:2,imdb_id:null})});assert.equal((await lookupEarlierPrices(2,{store,fetcher:noId})).entries.length,0);
+ await assert.rejects(lookupEarlierPrices(3,{fetcher:async()=>({ok:true,json:async()=>({id:4,imdb_id:imdb})})}));
+ await assert.rejects(lookupEarlierPrices(4,{fetcher:async url=>url.includes('themoviedb')?{ok:true,json:async()=>({id:4,imdb_id:imdb})}:{ok:false}}));
+ console.log('CheapCharts: exact US film identity, purchase-only undated previous prices, safe attribution, ambiguous edition rejection, cache and request coalescing passed');
+})().catch(error=>{console.error(error);process.exitCode=1;});
