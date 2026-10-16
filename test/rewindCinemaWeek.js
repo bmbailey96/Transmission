@@ -1,0 +1,6 @@
+const assert=require('node:assert/strict'),{officialWeek}=require('../lib/rewind/cinema');
+(async()=>{
+ const requested=[],base='https://www.cinemark.com/theatres/mt-kalispell/cinemark-signature-stadium-kalispell-14',original=global.fetch;
+ global.fetch=async url=>{const date=new URL(url).searchParams.get('showDate');requested.push(date);const data={'@graph':[{'@type':'MovieTheater','@id':base+'#theater'},{'@type':'Movie','@id':'film:1',name:'Next Week Film'},{'@type':'ScreeningEvent',location:{'@id':base+'#theater'},workPresented:{'@id':'film:1'},startDate:date+'T19:30:00-07:00',offers:{url:'https://www.cinemark.com/TicketSeatMap/?showtimeId='+date}}]};return {ok:true,text:async()=>'<script type="application/ld+json">'+JSON.stringify(data)+'</script>'};};
+ try{const rows=await officialWeek('2026-12-28','2026-10-16');assert.deepEqual(requested,['2026-12-28','2026-12-29','2026-12-30','2026-12-31','2027-01-01','2027-01-02','2027-01-03']);assert.equal(rows[0].dates.length,7);assert.equal(rows[0].dates[0],'2026-12-28');assert.equal(rows[0].dates.at(-1),'2027-01-03');console.log('Selected cinema week: requests all seven selected dates, not today, including year rollover passed');}finally{global.fetch=original;}
+})().catch(e=>{console.error(e);process.exitCode=1});
