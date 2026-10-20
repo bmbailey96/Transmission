@@ -43,6 +43,15 @@ assert.match(digest.subject,/title update/);assert.match(digest.html,/TV series/
   assert.equal((await alerts(alertEvent)).statusCode,200);assert.equal(data.get('watchlist').enabled,false);
   await require('../netlify/functions/rewind-check-background').handler({});
   assert.equal(data.has('receipt'),false,'Paused TV alerts do not send mail');
+  let mails=0;
+  global.fetch=async url=>{assert.match(String(url),/api.resend.com/,'TV checking never calls a movie API');mails++;return {ok:true};};
+  TV.check=async()=>({events:[{key:'tv:season:2:2026-11-01',kind:'tv-season',date:'2026-11-01',label:'Season 2 premiere: 2026-11-01'}]});
+  data.set('watchlist',{enabled:true,scope:'release-watch',movies:[],series:TV.normalize([row])});
+  const worker=require('../netlify/functions/rewind-check-background').handler;
+  await worker({});assert.equal(mails,1);assert.ok(data.has('film-tv:fixture'));
+  await worker({});assert.equal(mails,1,'Repeat TV checks do not duplicate alerts');
+  const prior=JSON.stringify(data.get('film-tv:fixture'));TV.check=async()=>{throw Error('Fixture TV source outage');};
+  await worker({});assert.equal(mails,1);assert.equal(JSON.stringify(data.get('film-tv:fixture')),prior,'Failed TV lookups retain checkpoint');
  }finally{Module._load=originalLoad;global.fetch=originalFetch;TV.check=originalCheck;}
 
  console.log('TV background: typed IDs, TV routes, episode progress, honest season availability, dates, invalid sources, privacy, digest labels passed');
