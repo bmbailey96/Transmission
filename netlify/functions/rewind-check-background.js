@@ -1,3 +1,4 @@
+const TV=require('../../lib/rewind/tv');
 const { connectLambda, getStore } = require('@netlify/blobs');
 const {movieEvents,pendingEvents,digestKey,eligibleEvents} = require('../../lib/rewind/availability');
 const {meaningfulEvents,buildDigest}=require('../../lib/rewind/email-digest');
@@ -16,9 +17,9 @@ exports.handler = async event => {
   let horizon;try{horizon=await getStore({name:'rewind-horizon'}).get('feed',{type:'json'})||require('../../lib/rewind/horizon-snapshot.json');}catch{}
   const changed = [];
   const updates = [];
-  for (const movie of settings.movies) {
+  for (const movie of [...settings.movies||[],...settings.series||[]]) {
     try {
-      const events = [...await movieEvents(movie.id,settings.services,{title:movie.title,store:priceStore}),...require('../../lib/rewind/horizon').filmEvents(horizon,movie.id,new Date().toLocaleDateString('en-CA',{timeZone:'America/Denver'}))];
+      const events = movie.mediaType==='tv'?(await TV.check(movie,settings.services)).events:[...await movieEvents(movie.id,settings.services,{title:movie.title,store:priceStore}),...require('../../lib/rewind/horizon').filmEvents(horizon,movie.id,new Date().toLocaleDateString('en-CA',{timeZone:'America/Denver'}))];
       const prior = await store.get(`film-${movie.id}`,{type:'json'});
       // First check reports current providers and future dates. Failed lookups never
       // erase previous observations or manufacture availability changes.

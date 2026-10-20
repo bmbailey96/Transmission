@@ -1,0 +1,27 @@
+const assert=require('node:assert/strict');
+const TV=require('../lib/rewind/tv');
+const {buildDigest}=require('../lib/rewind/email-digest');
+const row={id:'tv:fixture',tmdbId:101,title:'Fixture Series',followRelease:true,season:2,episode:1};
+const detail={id:101,name:'Fixture Series',seasons:[{season_number:1,air_date:'2024-01-01'},{season_number:2,air_date:'2026-11-01'}],next_episode_to_air:{season_number:2,episode_number:2,air_date:'2026-11-08'}};
+const providers={results:{US:{flatrate:[{provider_id:8,provider_name:'Netflix'}],link:'https://example.com/tv'}}};
+assert.ok(TV.valid(row));assert.equal(TV.valid({...row,id:101}),false);assert.equal(TV.valid({...row,season:0}),false);
+assert.equal(TV.valid({...row,episode:-1}),false);
+let output=TV.compose(row,detail,providers,['Netflix'],'2026-10-20',1);
+assert.equal(output.events.some(e=>e.kind==='subscription'),false,'Future target season never inherits series availability');
+assert.equal(output.events.filter(e=>e.kind==='tv-season').length,1);
+assert.equal(output.events.filter(e=>e.kind==='tv-episode').length,1);
+assert.equal(output.snapshot.id,'tv:fixture');assert.equal(output.snapshot.tmdbId,101);
+output=TV.compose(row,detail,providers,['Netflix'],'2026-11-08',1);
+assert.ok(output.events.find(e=>e.kind==='subscription').label.includes('confirm season 2'));
+assert.equal(TV.compose({...row,episode:2},detail,providers,[],'2026-11-08').events.some(e=>e.kind==='tv-episode'),false,'Do not alert completed episodes');
+assert.throws(()=>TV.compose(row,{...detail,id:202},providers,[]));
+assert.throws(()=>TV.compose(row,detail,{},[]),'Provider outage preserves previous snapshot');
+assert.equal(TV.normalize([row,row]).length,1);
+assert.equal('rating' in TV.normalize([{...row,rating:5}])[0],false,'No private ratings registered');
+const digest=buildDigest([{movie:{...row,mediaType:'tv'},events:output.events}]);
+assert.match(digest.subject,/title update/);assert.match(digest.html,/TV series/);
+(async()=>{
+ const paths=[];await TV.check(row,[],async(path,params)=>{paths.push(path);return path.endsWith('providers')?providers:detail;});
+ assert.deepEqual(paths,['/tv/101','/tv/101/watch/providers']);
+ console.log('TV background: typed IDs, TV routes, episode progress, honest season availability, dates, invalid sources, privacy, digest labels passed');
+})().catch(e=>{console.error(e);process.exitCode=1});
