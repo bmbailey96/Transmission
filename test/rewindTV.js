@@ -16,6 +16,7 @@ assert.ok(output.events.find(e=>e.kind==='subscription').label.includes('confirm
 assert.equal(TV.compose({...row,episode:2},detail,providers,[],'2026-11-08').events.some(e=>e.kind==='tv-episode'),false,'Do not alert completed episodes');
 assert.throws(()=>TV.compose(row,{...detail,id:202},providers,[]));
 assert.throws(()=>TV.compose(row,detail,{},[]),'Provider outage preserves previous snapshot');
+assert.equal(TV.compose({...row,season:3},detail,providers,[],'2026-11-08').events.some(e=>e.kind==='subscription'),false,'Unknown future seasons never inherit availability');
 assert.equal(TV.normalize([row,row]).length,1);
 assert.equal('rating' in TV.normalize([{...row,rating:5}])[0],false,'No private ratings registered');
 const digest=buildDigest([{movie:{...row,mediaType:'tv'},events:output.events}]);
@@ -23,5 +24,26 @@ assert.match(digest.subject,/title update/);assert.match(digest.html,/TV series/
 (async()=>{
  const paths=[];await TV.check(row,[],async(path,params)=>{paths.push(path);return path.endsWith('providers')?providers:detail;});
  assert.deepEqual(paths,['/tv/101','/tv/101/watch/providers']);
+
+ const Module=require('node:module'),originalLoad=Module._load,originalFetch=global.fetch,originalCheck=TV.check;
+ const data=new Map(),store={get:async key=>data.get(key),setJSON:async(key,value)=>data.set(key,JSON.parse(JSON.stringify(value)))};
+ Module._load=function(id,parent,...rest){if(id==='@netlify/blobs')return {connectLambda(){},getStore:()=>store};return originalLoad.call(this,id,parent,...rest);};
+ try{
+  global.fetch=async()=>({ok:true,json:async()=>({login:'bmbailey96'})});
+  const endpoint=require('../netlify/functions/rewind-library').handler;
+  const event={httpMethod:'POST',headers:{authorization:'Bearer fixture'},body:JSON.stringify({movies:[],series:[row],services:['Netflix']})};
+  assert.equal((await endpoint(event)).statusCode,200);assert.equal(data.get('library').series.length,1);
+  assert.equal((await endpoint({...event,body:JSON.stringify({movies:[],series:[{...row,id:101}]})})).statusCode,400);
+  await endpoint({...event,body:JSON.stringify({movies:[]})});assert.equal(data.get('library').series.length,1,'Older clients preserve series registrations');
+  TV.check=async r=>({snapshot:{id:r.id,checkedAt:1},events:[]});
+  await require('../netlify/functions/rewind-library-refresh-background').handler({});
+  assert.equal(data.get('snapshots').series[row.id].checkedAt,1,'TV-only libraries refresh');
+  const alerts=require('../netlify/functions/rewind-watchlist').handler;
+  const alertEvent={...event,body:JSON.stringify({enabled:false,scope:'release-watch',movies:[],series:[row]})};
+  assert.equal((await alerts(alertEvent)).statusCode,200);assert.equal(data.get('watchlist').enabled,false);
+  await require('../netlify/functions/rewind-check-background').handler({});
+  assert.equal(data.has('receipt'),false,'Paused TV alerts do not send mail');
+ }finally{Module._load=originalLoad;global.fetch=originalFetch;TV.check=originalCheck;}
+
  console.log('TV background: typed IDs, TV routes, episode progress, honest season availability, dates, invalid sources, privacy, digest labels passed');
 })().catch(e=>{console.error(e);process.exitCode=1});
